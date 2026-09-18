@@ -149,6 +149,8 @@ export function ContactPanel({
   }
 
   function handleDeleteTouch(touch: ContactTouch) {
+    // Still being saved — its real id doesn't exist yet.
+    if (touch.id.startsWith("temp-")) return;
     const previous = touches ?? [];
     const next = previous.filter((t) => t.id !== touch.id);
     setError(null);
@@ -212,6 +214,8 @@ export function ContactPanel({
         <Dialog.Overlay className="fixed inset-0 bg-overlay data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <Dialog.Content
           aria-describedby={undefined}
+          // The board refocuses the originating card itself.
+          onCloseAutoFocus={(event) => event.preventDefault()}
           onKeyDown={(event) => {
             if (event.key !== "t" && event.key !== "T") return;
             const target = event.target as HTMLElement;

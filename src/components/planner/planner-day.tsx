@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 
+import { PlannerViewToggle } from "@/components/planner/view-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -192,6 +193,8 @@ export function PlannerDay({
   }
 
   function handleToggleTask(task: PlannerTask) {
+    // Still being saved — its real id doesn't exist yet.
+    if (task.id.startsWith("temp-")) return;
     const snapshot = tasks;
     setTasks((all) =>
       all.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t)),
@@ -206,6 +209,7 @@ export function PlannerDay({
   }
 
   function handleDeleteTask(task: PlannerTask) {
+    if (task.id.startsWith("temp-")) return;
     const snapshot = tasks;
     setTasks((all) => all.filter((t) => t.id !== task.id));
     startTransition(async () => {
@@ -269,14 +273,26 @@ export function PlannerDay({
         <span className="text-neutral-secondary">
           {dayFormat.format(parseISODate(date))}
         </span>
+        {ordered.some((b) => displayedSeconds(b) > 0) && (
+          <span className="tabular-nums text-neutral-tertiary">
+            ·{" "}
+            {formatSeconds(
+              ordered.reduce((sum, b) => sum + displayedSeconds(b), 0),
+            )}{" "}
+            tracked
+          </span>
+        )}
         {date !== today && (
           <Button variant="ghost" onClick={() => goTo(today)}>
             Today
           </Button>
         )}
-        <span aria-live="polite" className="ml-auto text-danger">
+        <span aria-live="polite" className="text-danger">
           {notice}
         </span>
+        <div className="ml-auto">
+          <PlannerViewToggle date={date} active="day" />
+        </div>
       </div>
 
       {/* The three fixed blocks */}

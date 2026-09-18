@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
@@ -29,11 +30,14 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
           </Link>
         ))}
       </nav>
-      <form action={signOut}>
-        <Button type="submit" variant="secondary" appearance="outline">
-          Sign out
-        </Button>
-      </form>
+      <div className="flex items-center gap-1">
+        <ShortcutsDialog />
+        <form action={signOut}>
+          <Button type="submit" variant="secondary" appearance="outline">
+            Sign out
+          </Button>
+        </form>
+      </div>
     </header>
   );
 }

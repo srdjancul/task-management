@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+
 import { Board } from "@/components/board/board";
 import { TopBar } from "@/components/top-bar";
 import type { BoardContact } from "@/lib/contact-constants";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Outreach" };
 
 export default async function OutreachPage() {
   const supabase = await createClient();

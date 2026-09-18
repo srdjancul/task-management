@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 import { signIn, type SignInState } from "./actions";
 
-const initialState: SignInState = { error: null };
+const initialState: SignInState = { error: null, email: "" };
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(signIn, initialState);
@@ -24,6 +24,7 @@ export function LoginForm() {
           autoComplete="email"
           autoFocus
           required
+          defaultValue={state.email}
           aria-invalid={state.error ? true : undefined}
         />
       </div>

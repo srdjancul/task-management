@@ -99,7 +99,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   const q = query.trim().toLowerCase();
   const visible = q
     ? contacts.filter((c) =>
-        `${c.first_name} ${c.last_name} ${c.company}`
+        `${c.first_name} ${c.last_name} ${c.company} ${c.position}`
           .toLowerCase()
           .includes(q),
       )
@@ -318,6 +318,16 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
         </span>
       </div>
 
+      {contacts.length === 0 && (
+        <p className="px-3 pt-3 text-neutral-secondary sm:px-4">
+          No contacts yet — press{" "}
+          <kbd className="rounded-sm border border-neutral-primary bg-neutral-secondary px-1">
+            C
+          </kbd>{" "}
+          or click New contact to add the first one.
+        </p>
+      )}
+
       <DndContext
         id="outreach-board"
         sensors={sensors}
@@ -356,7 +366,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       {openContact && (
         <ContactPanel
           contact={openContact}
-          onClose={() => setOpenId(null)}
+          onClose={() => {
+            const id = openId;
+            setOpenId(null);
+            // Hand focus back to the card the panel came from.
+            requestAnimationFrame(() => focusCard(id ?? undefined));
+          }}
           onPatch={patchContact}
           onDeleted={(id) => {
             setOpenId(null);
