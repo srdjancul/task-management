@@ -245,7 +245,7 @@ export function ContactPanel({
             event.preventDefault();
             channelRef.current?.focus();
           }}
-          className="fixed inset-y-0 right-0 flex w-full max-w-panel flex-col border-l border-neutral-secondary bg-neutral-primary data-[state=open]:animate-in data-[state=open]:slide-in-from-right"
+          className="glass fixed inset-y-0 right-0 flex w-full max-w-panel flex-col data-[state=open]:animate-in data-[state=open]:slide-in-from-right"
         >
           {/* Header: identity, or the edit form. */}
           <div className="flex items-start gap-2 border-b border-neutral-secondary p-4">

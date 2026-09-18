@@ -10,10 +10,17 @@ Everything sits behind login; there is exactly one user.
 
 ## Design system
 
-- Source of truth: the Figma "Memorisely Design System" tokens,
-  transcribed into the `@theme` block of `src/app/globals.css`.
-- The app is **dark-only** (owner decision 2026-09-18). Primitives match
-  Figma's light documentation; semantic tokens are remapped to dark.
+- Source of truth: the `@theme` block of `src/app/globals.css`.
+  Palette + glass card recipe come from the Figma "Personal Finance App"
+  file (owner-approved restyle, 2026-09-19): ground `#0C0D0D`, teal
+  `#13E2C2` accent, blue/pink/yellow/red statuses, white-alpha neutrals.
+  The original Memorisely file still governs type scale, spacing, radii.
+- The app is **dark-only**. Surfaces are `.glass` (white-alpha gradient,
+  white/10 border, 20px backdrop blur) over the fixed `.app-beams` layer —
+  purple light beams that exist ONLY there, never on UI elements.
+- Layout: page container 1440px (`max-w-page`) with 32px gutters
+  (`px-8`, 16px on mobile); board columns wrap responsively — no
+  horizontal scrolling; 16px gaps.
 - **Tokens only.** Never a raw hex, px size, or new hue in a component —
   Tailwind's default palette/scales are cleared, so non-token utilities
   simply don't generate. New tokens (widths, scrims) go into `@theme`

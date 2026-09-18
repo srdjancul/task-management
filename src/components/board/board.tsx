@@ -290,8 +290,9 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   }
 
   return (
-    <div ref={boardRef} className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-3 px-3 pt-3 sm:px-4">
+    <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
+      <div className="flex flex-wrap items-center gap-3">
         <Input
           ref={searchRef}
           value={query}
@@ -319,7 +320,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       </div>
 
       {contacts.length === 0 && (
-        <p className="px-3 pt-3 text-neutral-secondary sm:px-4">
+        <p className="text-neutral-secondary">
           No contacts yet — press{" "}
           <kbd className="rounded-sm border border-neutral-primary bg-neutral-secondary px-1">
             C
@@ -336,7 +337,8 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
         onDragEnd={onDragEnd}
         onDragCancel={() => setDragged(null)}
       >
-        <div className="flex min-h-0 flex-1 snap-x gap-3 overflow-x-auto scroll-px-3 px-3 pt-3 pb-4 sm:scroll-px-4 sm:px-4">
+        {/* All 9 columns wrap inside the container — nothing off-screen. */}
+        <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
           {columns.map((column) => (
             <BoardColumn
               key={column.status}
@@ -351,12 +353,13 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
         </div>
         <DragOverlay>
           {dragged && (
-            <div className="flex w-column cursor-grabbing flex-col gap-1 rounded-base border border-brand bg-neutral-secondary p-3 text-sm">
+            <div className="glass flex w-column cursor-grabbing flex-col gap-2 rounded-lg border-brand p-4 text-sm">
               <ContactCardBody contact={dragged} />
             </div>
           )}
         </DragOverlay>
       </DndContext>
+      </div>
 
       <QuickAddDialog
         open={quickAddOpen}
@@ -395,7 +398,7 @@ function BoardColumn({
   const { setNodeRef, isOver } = useDroppable({ id: `col:${column.status}` });
 
   return (
-    <section className="flex w-column shrink-0 snap-start flex-col gap-2">
+    <section className="flex min-w-0 flex-col gap-2">
       <header className="flex items-baseline gap-2 px-1">
         <h2 className="font-medium text-neutral-secondary">
           {STATUS_LABELS[column.status]}
@@ -405,8 +408,8 @@ function BoardColumn({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-base p-1",
-          isOver && "bg-neutral-primary-hovered",
+          "flex flex-col gap-4 rounded-lg",
+          isOver && "bg-neutral-secondary",
         )}
       >
         {column.cards.map((contact) => (
@@ -418,7 +421,7 @@ function BoardColumn({
           />
         ))}
         {column.cards.length === 0 && (
-          <div className="h-16 shrink-0 rounded-base border border-dashed border-neutral-secondary" />
+          <div className="h-16 shrink-0 rounded-lg border border-dashed border-neutral-secondary" />
         )}
       </div>
     </section>

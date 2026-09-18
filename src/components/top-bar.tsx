@@ -12,7 +12,8 @@ const tabs = [
 
 export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-neutral-secondary px-4">
+    <header className="shrink-0 border-b border-neutral-secondary">
+      <div className="mx-auto flex h-12 w-full max-w-page items-center justify-between px-4 sm:px-8">
       <nav className="flex items-center gap-4">
         {tabs.map((tab) => (
           <Link
@@ -37,6 +38,7 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
             Sign out
           </Button>
         </form>
+      </div>
       </div>
     </header>
   );

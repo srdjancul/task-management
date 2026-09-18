@@ -2,72 +2,71 @@
 @import "tw-animate-css";
 
 /*
- * Design tokens — source: Figma "Memorisely Design System", page "Tokens"
- * (node 14002:66). The Figma page documents tokens as images, not Figma
- * variables, so values were transcribed from the panels by hand.
+ * Design tokens — owner-approved restyle, 2026-09-19.
  *
- * The app is DARK-ONLY (owner decision, 2026-09-18). The Figma file
- * documents the light values; the primitives below are copied from it
- * unchanged, and the semantic tokens are remapped onto the dark end of
- * the same ramps. There is no light theme and no theme switch.
+ * Palette source: Figma "Personal Finance App" (file W6Uf2Q34FoyGmYLDFuvaqO,
+ * node 2031:159): near-black ground #0C0D0D, ink #F8F8F8/#9C9C9C, accent
+ * teal #13E2C2, blue #4288F6, pink #F472B6, yellow #DEC763, error #FB505F.
+ * Card style from node 46993:5557: white-alpha gradient + 20px backdrop
+ * blur + white/10 border ("glass", below). Background beams after the
+ * Amply purple light effect; purple appears ONLY in the beams.
  *
  * Tailwind's default palette, type scale, radii and spacing are cleared so
- * only Figma tokens generate utilities. Components use the utilities
+ * only these tokens generate utilities. Components use the utilities
  * (bg-brand-primary, text-neutral-secondary, p-4, rounded-base) and never
  * a raw hex or px value.
  */
 
 /* ---------------------------------------------------------------------------
- * Primitives — raw palette, as documented in Figma. Never used directly in
- * components; semantic tokens below point at these.
+ * Primitives. Never used directly in components; semantic tokens below
+ * point at these.
  * ------------------------------------------------------------------------- */
 :root {
-  --grey-50: #ffffff;
-  --grey-100: #f8f8fa;
-  --grey-200: #ececf1;
-  --grey-300: #d8d9e0;
-  --grey-400: #b4b6c2;
-  --grey-500: #8d91a0;
-  --grey-600: #666b7a;
-  --grey-700: #4b4f5c;
-  --grey-800: #31343d;
-  --grey-900: #181a20;
+  --black-900: #0c0d0d;
+  --black-850: #111113;
+  --black-800: #17181b;
+  --black-700: #1e2024;
 
-  --purple-50: #f6f3ff;
-  --purple-100: #eee8ff;
-  --purple-300: #c7b8ff;
+  --white: #f8f8f8;
+  --white-pure: #ffffff;
+  --grey-400: #9c9c9c;
+  --grey-500: #6c6c72;
+  --grey-600: #4a4a50;
+
+  /* White-alpha steps — the glass system's neutrals. */
+  --white-a4: rgba(255, 255, 255, 0.04);
+  --white-a8: rgba(255, 255, 255, 0.08);
+  --white-a10: rgba(255, 255, 255, 0.1);
+  --white-a14: rgba(255, 255, 255, 0.14);
+  --white-a20: rgba(255, 255, 255, 0.2);
+  --white-a30: rgba(255, 255, 255, 0.3);
+
+  --teal-100: #d5f1ed;
+  --teal-500: #13e2c2;
+  --teal-600: #10bfa4;
+  --teal-700: #0d9c87;
+
+  --blue-100: #d4dff2;
+  --blue-500: #4288f6;
+
+  --pink-100: #fbcbe4;
+  --pink-500: #f472b6;
+
+  --yellow-100: #f5eed1;
+  --yellow-500: #dec763;
+
+  --red-100: #fec8cd;
+  --red-500: #fb505f;
+  --red-600: #de3b4b;
+  --red-700: #bd2c3c;
+
+  /* Beams only — never on UI surfaces. */
   --purple-500: #7c5cfc;
-  --purple-600: #6946f4;
   --purple-700: #5634d8;
-  --purple-900: #23165c;
-
-  --green-100: #e1f6d2;
-  --green-300: #bdf09a;
-  --green-500: #72c94c;
-  --green-700: #467f2d;
-  --green-900: #1d3b12;
-
-  --blue-100: #eef7ff;
-  --blue-300: #a6d8ff;
-  --blue-500: #339dff;
-  --blue-700: #156ccf;
-  --blue-900: #0a3768;
-
-  --yellow-100: #fff8dd;
-  --yellow-300: #ffe37a;
-  --yellow-500: #ffc933;
-  --yellow-700: #c48d00;
-  --yellow-900: #624300;
-
-  --red-100: #fdecee;
-  --red-300: #f4a0a8;
-  --red-500: #e24b5b;
-  --red-700: #b52e3d;
-  --red-900: #5e1420;
 }
 
 @theme {
-  /* Clear Tailwind defaults so only Figma tokens exist. */
+  /* Clear Tailwind defaults so only our tokens exist. */
   --color-*: initial;
   --text-*: initial;
   --font-weight-*: initial;
@@ -77,54 +76,55 @@
   --spacing-*: initial;
 
   /* ------------------------------------------------------------------------
-   * Background — bg-*  (dark theme values)
+   * Background — bg-*
+   * neutral-primary is the solid ground; neutral-secondary/tertiary are
+   * white-alpha and read as glass over the beams.
    * ---------------------------------------------------------------------- */
-  --background-color-neutral-primary: var(--grey-900);
-  --background-color-neutral-primary-hovered: var(--grey-800);
-  --background-color-neutral-primary-pressed: var(--grey-700);
-  --background-color-neutral-primary-disabled: var(--grey-800);
-  --background-color-neutral-secondary: var(--grey-800);
-  --background-color-neutral-secondary-hovered: var(--grey-700);
-  --background-color-neutral-secondary-pressed: var(--grey-600);
-  --background-color-neutral-tertiary: var(--grey-700);
-  --background-color-neutral-tertiary-hovered: var(--grey-600);
-  --background-color-neutral-inverse: var(--grey-50);
-  --background-color-neutral-inverse-hovered: var(--grey-100);
+  --background-color-neutral-primary: var(--black-900);
+  --background-color-neutral-primary-hovered: var(--black-800);
+  --background-color-neutral-primary-pressed: var(--black-700);
+  --background-color-neutral-primary-disabled: var(--black-850);
+  --background-color-neutral-secondary: var(--white-a8);
+  --background-color-neutral-secondary-hovered: var(--white-a14);
+  --background-color-neutral-secondary-pressed: var(--white-a20);
+  --background-color-neutral-tertiary: var(--white-a14);
+  --background-color-neutral-tertiary-hovered: var(--white-a20);
+  --background-color-neutral-inverse: var(--white);
+  --background-color-neutral-inverse-hovered: var(--white-pure);
 
-  --background-color-brand-primary: var(--purple-500);
-  --background-color-brand-primary-hovered: var(--purple-600);
-  --background-color-brand-primary-pressed: var(--purple-700);
-  --background-color-brand-primary-disabled: var(--grey-700);
-  --background-color-brand-secondary: var(--purple-900);
-  --background-color-brand-secondary-hovered: var(--purple-700);
+  --background-color-brand-primary: var(--teal-500);
+  --background-color-brand-primary-hovered: var(--teal-600);
+  --background-color-brand-primary-pressed: var(--teal-700);
+  --background-color-brand-primary-disabled: var(--black-700);
+  --background-color-brand-secondary: color-mix(in srgb, var(--teal-500) 15%, transparent);
+  --background-color-brand-secondary-hovered: color-mix(in srgb, var(--teal-500) 25%, transparent);
 
-  /* App-level scrim behind dialogs/panels; grey-900 at 60%, not a new hue. */
-  --background-color-overlay: color-mix(in srgb, var(--grey-900) 60%, transparent);
+  /* Scrim behind dialogs/panels. */
+  --background-color-overlay: rgba(0, 0, 0, 0.6);
 
-  --background-color-success: var(--green-500);
+  --background-color-success: var(--teal-500);
   --background-color-warning: var(--yellow-500);
   --background-color-danger: var(--red-500);
+  --background-color-danger-hovered: var(--red-600);
+  --background-color-danger-pressed: var(--red-700);
   --background-color-info: var(--blue-500);
-
-  /* Not in the Figma token table — read off the Button component's danger
-     hover/active states and built from primitives. */
-  --background-color-danger-hovered: color-mix(in srgb, var(--red-500), var(--red-700));
-  --background-color-danger-pressed: color-mix(in srgb, var(--red-700) 80%, var(--red-900));
+  --background-color-accent-pink: var(--pink-500);
 
   /* ------------------------------------------------------------------------
-   * Text — text-*  (dark theme values)
-   * text-neutral-inverse is the dark ink used on light or colored surfaces.
+   * Text — text-*
+   * text-neutral-inverse is the dark ink for bright surfaces (teal, yellow,
+   * white).
    * ---------------------------------------------------------------------- */
-  --text-color-neutral-primary: var(--grey-50);
+  --text-color-neutral-primary: var(--white);
   --text-color-neutral-primary-disabled: var(--grey-600);
   --text-color-neutral-secondary: var(--grey-400);
   --text-color-neutral-tertiary: var(--grey-500);
-  --text-color-neutral-inverse: var(--grey-900);
+  --text-color-neutral-inverse: var(--black-900);
 
-  --text-color-brand-primary: var(--purple-300);
-  --text-color-brand-secondary: var(--purple-500);
+  --text-color-brand-primary: var(--teal-500);
+  --text-color-brand-secondary: var(--teal-100);
 
-  --text-color-success: var(--green-500);
+  --text-color-success: var(--teal-500);
   --text-color-warning: var(--yellow-500);
   --text-color-danger: var(--red-500);
   --text-color-info: var(--blue-500);
@@ -132,27 +132,26 @@
   /* ------------------------------------------------------------------------
    * Border — border-*  (also focus rings: ring-* / outline-*)
    * ---------------------------------------------------------------------- */
-  --border-color-neutral-primary: var(--grey-700);
-  --border-color-neutral-primary-hovered: var(--grey-600);
-  --border-color-neutral-primary-pressed: var(--grey-500);
-  --border-color-neutral-primary-disabled: var(--grey-800);
-  --border-color-neutral-secondary: var(--grey-800);
-  --border-color-neutral-inverse: var(--grey-300);
+  --border-color-neutral-primary: var(--white-a14);
+  --border-color-neutral-primary-hovered: var(--white-a20);
+  --border-color-neutral-primary-pressed: var(--white-a30);
+  --border-color-neutral-primary-disabled: var(--white-a8);
+  --border-color-neutral-secondary: var(--white-a10);
+  --border-color-neutral-inverse: var(--white);
 
-  --border-color-brand: var(--purple-500);
-  --border-color-brand-hovered: var(--purple-600);
+  --border-color-brand: var(--teal-500);
+  --border-color-brand-hovered: var(--teal-600);
 
-  --border-color-success: var(--green-500);
+  --border-color-success: var(--teal-500);
   --border-color-warning: var(--yellow-500);
   --border-color-danger: var(--red-500);
   --border-color-info: var(--blue-500);
 
-  --outline-color-brand: var(--purple-500);
-  --ring-color-brand: var(--purple-500);
+  --outline-color-brand: var(--teal-500);
+  --ring-color-brand: var(--teal-500);
 
   /* ------------------------------------------------------------------------
    * Typography — Inter. text-{size} carries its paired line height.
-   * Figma defines line heights for sm → 3xl only; 4xl–6xl have none.
    * ---------------------------------------------------------------------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
@@ -185,9 +184,7 @@
   --leading-3xl: 34px;
 
   /* ------------------------------------------------------------------------
-   * Spacing + sizing — 4px base unit. Only these steps exist
-   * (p-7, gap-9 etc. will not generate). Sizing tokens 4–16 share the scale:
-   * size-4 = 16px … size-16 = 64px.
+   * Spacing + sizing — 4px base unit. Only these steps exist.
    * ---------------------------------------------------------------------- */
   --spacing-0: 0px;
   --spacing-1: 4px;
@@ -202,17 +199,16 @@
   --spacing-16: 64px;
 
   /* ------------------------------------------------------------------------
-   * Layout widths — app-level, not in Figma (the Figma scale stops at 64px).
-   * Used as w-column, max-w-search etc.
+   * Layout widths — app-level. Page container: 1440px, 32px gutters
+   * (owner spec, 2026-09-19).
    * ---------------------------------------------------------------------- */
+  --container-page: 1440px;
   --container-column: 256px;
   --container-search: 320px;
   --container-panel: 400px;
 
   /* ------------------------------------------------------------------------
-   * Radius — approved 2026-09-18. Figma lists the names only; these values
-   * are the owner-confirmed set.
-   * rounded-full is built into Tailwind.
+   * Radius — cards 12, panels/dialogs 16 (finance-app card style).
    * ---------------------------------------------------------------------- */
   --radius-none: 0px;
   --radius-sm: 4px;
@@ -222,18 +218,71 @@
   --radius-2xl: 24px;
 
   /*
-   * Border width (0, 1, 2, 4px) and opacity (0, 25, 50, 75, 100) match
-   * Tailwind's built-in border / border-2 / border-4 and opacity-25 … -100
-   * utilities exactly, so they need no theme variables. Use only those steps.
+   * Border width (0, 1, 2, 4px) and opacity match Tailwind's built-in
+   * border / border-2 / border-4 and opacity-25 … -100 utilities.
    */
+}
+
+@layer components {
+  /*
+   * Glass surface (finance-app card recipe): white-alpha gradient,
+   * white/10 border, 20px backdrop blur. Border color can be overridden
+   * by border-* utilities (hover, drop-target, running states).
+   */
+  .glass {
+    background: linear-gradient(180deg, var(--white-a4), var(--white-a10));
+    border: 1px solid var(--white-a10);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+
+  /*
+   * Fixed full-viewport background: near-black ground with soft purple
+   * light beams falling from the top (Amply effect). Rendered once behind
+   * everything; glass surfaces pick it up through their blur.
+   */
+  .app-beams {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    pointer-events: none;
+    background-color: var(--black-900);
+    background-image: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--purple-500) 45%, transparent),
+        transparent 65%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--purple-700) 38%, transparent),
+        transparent 55%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--purple-700) 32%, transparent),
+        transparent 50%
+      );
+    background-repeat: no-repeat;
+    background-position:
+      50% 0,
+      8% 0,
+      92% 0;
+    background-size:
+      36% 100%,
+      22% 100%,
+      22% 100%;
+    filter: blur(64px);
+  }
 }
 
 @layer base {
   html {
     color-scheme: dark;
+    background: var(--black-900);
   }
 
   body {
-    @apply bg-neutral-primary font-sans text-sm font-regular text-neutral-primary antialiased;
+    /* Page color comes from .app-beams (fixed, behind everything). */
+    @apply font-sans text-sm font-regular text-neutral-primary antialiased;
   }
 }

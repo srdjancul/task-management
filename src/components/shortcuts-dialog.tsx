@@ -70,7 +70,7 @@ export function ShortcutsDialog() {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-overlay data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <Dialog.Content aria-describedby={undefined} className="fixed top-1/2 left-1/2 flex w-[calc(100%-32px)] max-w-panel -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-lg border border-neutral-secondary bg-neutral-primary p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
+        <Dialog.Content aria-describedby={undefined} className="glass fixed top-1/2 left-1/2 flex w-[calc(100%-32px)] max-w-panel -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl p-4 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
           <Dialog.Title className="text-lg font-medium">
             Keyboard shortcuts
           </Dialog.Title>

@@ -87,7 +87,8 @@ export function PlannerWeek({
   const rangeLabel = `${rangeFormat.format(parseISODate(monday))} – ${rangeFormat.format(parseISODate(saturday))} ${yearFormat.format(parseISODate(saturday))}`;
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
+    <main className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 py-6 sm:px-8">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
@@ -119,7 +120,7 @@ export function PlannerWeek({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="glass overflow-x-auto rounded-xl p-4">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-secondary text-neutral-tertiary">
@@ -230,6 +231,7 @@ export function PlannerWeek({
         Planned is the fixed plan (2h + 6h + 2h) × 6 days. Click a day header
         to open that day.
       </p>
+      </div>
     </main>
   );
 }

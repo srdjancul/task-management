@@ -84,8 +84,8 @@ export function ContactCard({
       onKeyDown={onKeyDown}
       onClick={onOpen}
       className={cn(
-        "flex w-full shrink-0 cursor-grab touch-manipulation flex-col gap-1 rounded-base border border-neutral-secondary bg-neutral-secondary p-3 text-left text-sm",
-        "outline-none transition-colors hover:border-neutral-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+        "glass flex w-full shrink-0 cursor-grab touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
+        "outline-none transition-colors hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         drag.isDragging && "opacity-50",
         drop.isOver && !drag.isDragging && "border-brand",
       )}

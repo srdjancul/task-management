@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // --grey-900; meta tags need a literal value.
-  themeColor: "#181a20",
+  // --black-900; meta tags need a literal value.
+  themeColor: "#0c0d0d",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -28,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla)
           inject attributes into <body> and trip dev hydration warnings. */}
       <body className="min-h-full" suppressHydrationWarning>
+        <div aria-hidden className="app-beams" />
         {children}
       </body>
     </html>

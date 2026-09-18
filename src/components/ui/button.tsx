@@ -19,7 +19,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          "bg-brand-primary text-neutral-primary",
+          // Teal is bright — dark ink on it.
+          "bg-brand-primary text-neutral-inverse",
           "hover:bg-brand-primary-hovered active:bg-brand-primary-pressed",
           "disabled:bg-brand-primary-disabled",
         ],
@@ -61,10 +62,10 @@ const buttonVariants = cva(
         variant: "secondary",
         appearance: "outline",
         className: [
-          "border-neutral-primary bg-neutral-primary",
-          "hover:border-transparent hover:bg-neutral-primary-hovered",
-          "active:bg-neutral-primary-pressed",
-          "disabled:bg-neutral-primary-disabled",
+          "border-neutral-primary bg-transparent",
+          "hover:bg-neutral-secondary",
+          "active:bg-neutral-secondary-pressed",
+          "disabled:bg-transparent disabled:border-neutral-primary-disabled",
         ],
       },
     ],

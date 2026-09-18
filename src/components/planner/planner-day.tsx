@@ -236,7 +236,8 @@ export function PlannerDay({
   ).filter((b): b is TimeBlock => Boolean(b));
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
+    <main className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 py-6 sm:px-8">
       {/* Day navigation */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -296,7 +297,7 @@ export function PlannerDay({
       </div>
 
       {/* The three fixed blocks */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         {ordered.map((block) => {
           const category = BLOCK_CATEGORIES.find(
             (c) => c.key === block.category,
@@ -312,8 +313,8 @@ export function PlannerDay({
             <section
               key={block.id}
               className={cn(
-                "flex flex-col gap-3 rounded-base border p-3",
-                isRunning ? "border-brand" : "border-neutral-secondary",
+                "glass flex flex-col gap-3 rounded-lg p-4",
+                isRunning && "border-brand",
               )}
             >
               <header className="flex items-baseline justify-between">
@@ -386,7 +387,7 @@ export function PlannerDay({
       </div>
 
       {/* Tasks not attached to any block */}
-      <section className="flex flex-col gap-2 rounded-base border border-neutral-secondary p-3">
+      <section className="glass flex flex-col gap-2 rounded-lg p-4">
         <h2 className="font-medium">Other tasks</h2>
         <TaskList
           tasks={tasks.filter((t) => t.block_id === null)}
@@ -395,6 +396,7 @@ export function PlannerDay({
           onDelete={handleDeleteTask}
         />
       </section>
+      </div>
     </main>
   );
 }
