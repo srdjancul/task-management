@@ -1,5 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+
+import { signOut } from "./login/actions";
 
 // Temporary step-1 preview, laid out like the Figma "Components" frame.
 const buttons = [
@@ -19,9 +22,23 @@ const badges = [
   { variant: "secondary", appearance: "outline" },
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+
   return (
     <main className="flex flex-col gap-8 p-6">
+      <header className="flex items-center justify-between gap-4">
+        <p className="text-neutral-secondary">
+          Signed in as {data?.claims.email}
+        </p>
+        <form action={signOut}>
+          <Button type="submit" variant="secondary" appearance="outline">
+            Sign out
+          </Button>
+        </form>
+      </header>
+
       <section className="flex flex-col gap-3">
         <h1 className="text-lg font-medium">Button</h1>
         <p className="text-neutral-secondary">
