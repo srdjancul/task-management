@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Design tokens — source: Figma "Memorisely Design System", page "Tokens"
+ * (node 14002:66). The Figma page documents tokens as images, not Figma
+ * variables, so values were transcribed from the panels by hand.
+ *
+ * Tailwind's default palette, type scale, radii and spacing are cleared so
+ * only Figma tokens generate utilities. Components use the utilities
+ * (bg-brand-primary, text-neutral-secondary, p-4, rounded-base) and never
+ * a raw hex or px value.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Primitives — raw palette. Never used directly in components; semantic
+ * tokens below point at these.
+ * ------------------------------------------------------------------------- */
+:root {
+  --grey-50: #ffffff;
+  --grey-100: #f8f8fa;
+  --grey-200: #ececf1;
+  --grey-300: #d8d9e0;
+  --grey-400: #b4b6c2;
+  --grey-500: #8d91a0;
+  --grey-600: #666b7a;
+  --grey-700: #4b4f5c;
+  --grey-800: #31343d;
+  --grey-900: #181a20;
+
+  --purple-50: #f6f3ff;
+  --purple-100: #eee8ff;
+  --purple-300: #c7b8ff;
+  --purple-500: #7c5cfc;
+  --purple-600: #6946f4;
+  --purple-700: #5634d8;
+  --purple-900: #23165c;
+
+  --green-100: #e1f6d2;
+  --green-300: #bdf09a;
+  --green-500: #72c94c;
+  --green-700: #467f2d;
+  --green-900: #1d3b12;
+
+  --blue-100: #eef7ff;
+  --blue-300: #a6d8ff;
+  --blue-500: #339dff;
+  --blue-700: #156ccf;
+  --blue-900: #0a3768;
+
+  --yellow-100: #fff8dd;
+  --yellow-300: #ffe37a;
+  --yellow-500: #ffc933;
+  --yellow-700: #c48d00;
+  --yellow-900: #624300;
+
+  --red-100: #fdecee;
+  --red-300: #f4a0a8;
+  --red-500: #e24b5b;
+  --red-700: #b52e3d;
+  --red-900: #5e1420;
+}
+
+@theme {
+  /* Clear Tailwind defaults so only Figma tokens exist. */
+  --color-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+  --spacing: initial;
+  --spacing-*: initial;
+
+  /* ------------------------------------------------------------------------
+   * Background — bg-*
+   * ---------------------------------------------------------------------- */
+  --background-color-neutral-primary: var(--grey-50);
+  --background-color-neutral-primary-hovered: var(--grey-100);
+  --background-color-neutral-primary-pressed: var(--grey-200);
+  --background-color-neutral-primary-disabled: var(--grey-100);
+  --background-color-neutral-secondary: var(--grey-100);
+  --background-color-neutral-secondary-hovered: var(--grey-200);
+  --background-color-neutral-secondary-pressed: var(--grey-300);
+  --background-color-neutral-tertiary: var(--grey-200);
+  --background-color-neutral-tertiary-hovered: var(--grey-300);
+  --background-color-neutral-inverse: var(--grey-900);
+  --background-color-neutral-inverse-hovered: var(--grey-800);
+
+  --background-color-brand-primary: var(--purple-500);
+  --background-color-brand-primary-hovered: var(--purple-600);
+  --background-color-brand-primary-pressed: var(--purple-700);
+  --background-color-brand-primary-disabled: var(--grey-300);
+  --background-color-brand-secondary: var(--purple-100);
+  --background-color-brand-secondary-hovered: var(--purple-300);
+
+  --background-color-success: var(--green-500);
+  --background-color-warning: var(--yellow-500);
+  --background-color-danger: var(--red-500);
+  --background-color-info: var(--blue-500);
+
+  /* Not in the Figma token table — read off the Button component's danger
+     hover/active states and built from primitives. */
+  --background-color-danger-hovered: color-mix(in srgb, var(--red-500), var(--red-700));
+  --background-color-danger-pressed: color-mix(in srgb, var(--red-700) 80%, var(--red-900));
+
+  /* ------------------------------------------------------------------------
+   * Text — text-*
+   * ---------------------------------------------------------------------- */
+  --text-color-neutral-primary: var(--grey-900);
+  --text-color-neutral-primary-disabled: var(--grey-400);
+  --text-color-neutral-secondary: var(--grey-600);
+  --text-color-neutral-tertiary: var(--grey-400);
+  --text-color-neutral-inverse: var(--grey-50);
+
+  --text-color-brand-primary: var(--purple-600);
+  --text-color-brand-secondary: var(--purple-500);
+
+  --text-color-success: var(--green-700);
+  --text-color-warning: var(--yellow-700);
+  --text-color-danger: var(--red-700);
+  --text-color-info: var(--blue-700);
+
+  /* ------------------------------------------------------------------------
+   * Border — border-*  (also focus rings: ring-* / outline-*)
+   * ---------------------------------------------------------------------- */
+  --border-color-neutral-primary: var(--grey-300);
+  --border-color-neutral-primary-hovered: var(--grey-400);
+  --border-color-neutral-primary-pressed: var(--grey-500);
+  --border-color-neutral-primary-disabled: var(--grey-200);
+  --border-color-neutral-secondary: var(--grey-200);
+  --border-color-neutral-inverse: var(--grey-700);
+
+  --border-color-brand: var(--purple-500);
+  --border-color-brand-hovered: var(--purple-600);
+
+  --border-color-success: var(--green-500);
+  --border-color-warning: var(--yellow-500);
+  --border-color-danger: var(--red-500);
+  --border-color-info: var(--blue-500);
+
+  --outline-color-brand: var(--purple-500);
+  --ring-color-brand: var(--purple-500);
+
+  /* ------------------------------------------------------------------------
+   * Typography — Inter. text-{size} carries its paired line height.
+   * Figma defines line heights for sm → 3xl only; 4xl–6xl have none.
+   * ---------------------------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 22px;
+  --text-lg: 18px;
+  --text-lg--line-height: 24px;
+  --text-xl: 22px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 26px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 34px;
+  --text-4xl: 40px;
+  --text-5xl: 64px;
+  --text-6xl: 96px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --leading-sm: 20px;
+  --leading-base: 22px;
+  --leading-lg: 24px;
+  --leading-xl: 28px;
+  --leading-2xl: 32px;
+  --leading-3xl: 34px;
+
+  /* ------------------------------------------------------------------------
+   * Spacing + sizing — 4px base unit. Only these steps exist
+   * (p-7, gap-9 etc. will not generate). Sizing tokens 4–16 share the scale:
+   * size-4 = 16px … size-16 = 64px.
+   * ---------------------------------------------------------------------- */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  /* ------------------------------------------------------------------------
+   * Radius — PROVISIONAL. Figma lists the names (none, sm, base, lg, xl,
+   * 2xl, full) but shows no values. Confirm before building further.
+   * rounded-full is built into Tailwind.
+   * ---------------------------------------------------------------------- */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-base: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /*
+   * Border width (0, 1, 2, 4px) and opacity (0, 25, 50, 75, 100) match
+   * Tailwind's built-in border / border-2 / border-4 and opacity-25 … -100
+   * utilities exactly, so they need no theme variables. Use only those steps.
+   */
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-neutral-primary font-sans text-sm font-regular text-neutral-primary antialiased;
+  }
+}
