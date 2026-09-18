@@ -41,6 +41,11 @@ const badgeVariants = cva(
         appearance: "soft",
         className: "border-success-soft bg-success-soft text-success",
       },
+      {
+        variant: "info",
+        appearance: "soft",
+        className: "border-info-soft bg-info-soft text-info",
+      },
     ],
     defaultVariants: {
       variant: "primary",

@@ -42,7 +42,15 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
       </Badge>
     );
   }
-  if (status === "to_contact" || status === "won") {
+  // Owner spec (node 47132:828): to-contact wears the BLUE soft chip.
+  if (status === "to_contact") {
+    return (
+      <Badge variant="info" appearance="soft">
+        {STATUS_LABELS[status]}
+      </Badge>
+    );
+  }
+  if (status === "won") {
     return (
       <Badge variant="success" appearance="soft">
         {STATUS_LABELS[status]}

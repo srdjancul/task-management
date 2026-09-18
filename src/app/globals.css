@@ -119,6 +119,7 @@
      10% tint fill + 10% tint border + full-strength text. */
   --background-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
   --background-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
+  --background-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
 
   /* ------------------------------------------------------------------------
    * Text — text-*
@@ -158,6 +159,7 @@
   --border-color-info: var(--blue-500);
   --border-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
   --border-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
+  --border-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
 
   --outline-color-brand: var(--teal-500);
   --ring-color-brand: var(--teal-500);
