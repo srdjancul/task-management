@@ -21,6 +21,8 @@ const badgeVariants = cva(
       appearance: {
         filled: "",
         outline: "",
+        // Finance-app chip: 10% tint fill + border, full-strength text.
+        soft: "",
       },
     },
     compoundVariants: [
@@ -28,6 +30,16 @@ const badgeVariants = cva(
         variant: "secondary",
         appearance: "outline",
         className: "border-neutral-primary bg-neutral-primary",
+      },
+      {
+        variant: "destructive",
+        appearance: "soft",
+        className: "border-danger-soft bg-danger-soft text-danger",
+      },
+      {
+        variant: "success",
+        appearance: "soft",
+        className: "border-success-soft bg-success-soft text-success",
       },
     ],
     defaultVariants: {

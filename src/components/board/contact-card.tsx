@@ -32,17 +32,31 @@ export function ApproachBadge({ approach }: { approach: ContactApproach }) {
 }
 
 // Status on the card, since the board groups by approach, not status.
-// Owner rule: rejected shows red; won earns green.
+// Owner spec: rejected & ghosted wear the red soft chip; to-contact and
+// won wear the teal one; everything in between stays quiet.
 export function StatusBadge({ status }: { status: ContactStatus }) {
-  const variant =
-    status === "rejected"
-      ? "destructive"
-      : status === "won"
-        ? "success"
-        : status === "ghosted"
-          ? "warning"
-          : "secondary";
-  return <Badge variant={variant}>{STATUS_LABELS[status]}</Badge>;
+  if (status === "rejected" || status === "ghosted") {
+    return (
+      <Badge variant="destructive" appearance="soft">
+        {STATUS_LABELS[status]}
+      </Badge>
+    );
+  }
+  if (status === "to_contact" || status === "won") {
+    return (
+      <Badge variant="success" appearance="soft">
+        {STATUS_LABELS[status]}
+      </Badge>
+    );
+  }
+  return <Badge variant="secondary">{STATUS_LABELS[status]}</Badge>;
+}
+
+// State tint for the card surface itself (over .glass).
+export function cardTone(status: ContactStatus): string | undefined {
+  if (status === "rejected" || status === "ghosted") return "glass-danger";
+  if (status === "to_contact" || status === "won") return "glass-positive";
+  return undefined;
 }
 
 // Inner content, shared by the card and the drag overlay. Every card
@@ -103,6 +117,7 @@ export function ContactCard({
       onClick={onOpen}
       className={cn(
         "glass flex w-full shrink-0 cursor-grab touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
+        cardTone(contact.status),
         "outline-none transition-colors hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         drag.isDragging && "opacity-50",
         drop.isOver && !drag.isDragging && "border-brand",

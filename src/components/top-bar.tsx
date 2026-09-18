@@ -13,7 +13,8 @@ const tabs = [
 export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
   return (
     <header className="shrink-0 border-b border-neutral-secondary">
-      <div className="mx-auto flex h-12 w-full max-w-page items-center justify-between px-4 sm:px-8">
+      {/* Owner spec: 12px vertical padding on the navbar. */}
+      <div className="mx-auto flex w-full max-w-page items-center justify-between px-4 py-3 sm:px-8">
       <nav className="flex items-center gap-4">
         {tabs.map((tab) => (
           <Link

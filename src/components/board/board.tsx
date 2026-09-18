@@ -18,6 +18,7 @@ import {
 import { Plus } from "lucide-react";
 
 import {
+  cardTone,
   ContactCard,
   ContactCardBody,
 } from "@/components/board/contact-card";
@@ -385,7 +386,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           </div>
           <DragOverlay>
             {dragged && (
-              <div className="glass flex w-column cursor-grabbing flex-col gap-2 rounded-lg border-brand p-4 text-sm">
+              <div
+                className={cn(
+                  "glass flex w-column cursor-grabbing flex-col gap-2 rounded-lg border-brand p-4 text-sm",
+                  cardTone(dragged.status),
+                )}
+              >
                 <ContactCardBody contact={dragged} />
               </div>
             )}
