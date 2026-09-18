@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 
 // Restyled to the Figma "badge" component (node 14006:1916).
 const badgeVariants = cva(
-  "inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-transparent px-2 text-sm font-regular whitespace-nowrap [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+  // Owner spec: badge padding 12px horizontal, 8px vertical.
+  "inline-flex shrink-0 items-center gap-1 rounded-full border border-transparent px-3 py-2 text-sm leading-none font-regular whitespace-nowrap [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

@@ -19,10 +19,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          // Teal is bright — dark ink on it.
-          "bg-brand-primary text-neutral-inverse",
-          "hover:bg-brand-primary-hovered active:bg-brand-primary-pressed",
-          "disabled:bg-brand-primary-disabled",
+          // Owner spec: primary actions are white with black ink.
+          "bg-neutral-inverse text-neutral-inverse",
+          "hover:bg-neutral-inverse-hovered active:bg-neutral-inverse-pressed",
+          "disabled:bg-brand-primary-disabled disabled:text-neutral-primary-disabled",
         ],
         secondary: "text-neutral-primary",
         // App-level: quiet chrome buttons (panel close, edit, row actions).
@@ -42,6 +42,8 @@ const buttonVariants = cva(
         outline: "",
       },
       size: {
+        // Owner spec: 12px padding on buttons.
+        md: "gap-2 px-3 py-3 text-sm",
         sm: "h-8 gap-2 px-3 text-sm",
         icon: "size-8",
         "icon-sm": "size-6",
@@ -72,7 +74,7 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: "primary",
       appearance: "filled",
-      size: "sm",
+      size: "md",
     },
   },
 );

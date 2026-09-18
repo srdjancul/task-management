@@ -15,7 +15,6 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-
 import { Plus } from "lucide-react";
 
 import {
@@ -26,19 +25,51 @@ import { ContactPanel } from "@/components/board/contact-panel";
 import { QuickAddDialog } from "@/components/board/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createContact, moveContact } from "@/lib/actions/contacts";
-import type { ContactFields } from "@/lib/contact-constants";
-import {
-  CONTACT_STATUSES,
-  STATUS_LABELS,
-  type BoardContact,
-  type ContactStatus,
+import { createContact, placeContact } from "@/lib/actions/contacts";
+import type {
+  BoardContact,
+  ContactFields,
 } from "@/lib/contact-constants";
 import { cn } from "@/lib/utils";
 
-type Column = { status: ContactStatus; cards: BoardContact[] };
+/*
+ * The board groups contacts under headlines (owner spec, 2026-09-19):
+ * "Direct contact" and "Applied" hold the live pipeline by approach;
+ * "Rejected & Ghosted" collects dead contacts from either approach.
+ * Status lives on the card and in the panel; dragging between groups
+ * changes approach (live groups) or buries/revives the contact.
+ */
+const GROUPS = [
+  { key: "direct", title: "Direct contact" },
+  { key: "applied", title: "Applied" },
+  { key: "closed", title: "Rejected & Ghosted" },
+] as const;
 
-// Prefer a card under the pointer over its column, so drops land between
+type GroupKey = (typeof GROUPS)[number]["key"];
+type Group = { key: GroupKey; title: string; cards: BoardContact[] };
+
+function groupOf(contact: BoardContact): GroupKey {
+  if (contact.status === "rejected" || contact.status === "ghosted")
+    return "closed";
+  return contact.approach === "applied" ? "applied" : "direct";
+}
+
+// What moving a card into `target` means for its data.
+function transitionFor(
+  contact: BoardContact,
+  target: GroupKey,
+): Partial<Pick<BoardContact, "status" | "approach">> {
+  const from = groupOf(contact);
+  if (from === target) return {};
+  if (target === "closed") return { status: "ghosted" };
+  // Leaving the dead pool revives the contact at the top of the funnel.
+  return {
+    approach: target === "applied" ? "applied" : "direct",
+    ...(from === "closed" ? { status: "to_contact" as const } : {}),
+  };
+}
+
+// Prefer a card under the pointer over its group, so drops land between
 // cards; fall back to plain intersection near edges.
 const collisionDetection: CollisionDetection = (args) => {
   const withinPointer = pointerWithin(args);
@@ -105,23 +136,23 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       )
     : contacts;
 
-  const columns: Column[] = React.useMemo(
+  const groups: Group[] = React.useMemo(
     () =>
-      CONTACT_STATUSES.map((status) => ({
-        status,
+      GROUPS.map((group) => ({
+        ...group,
         cards: visible
-          .filter((c) => c.status === status)
+          .filter((c) => groupOf(c) === group.key)
           .sort((a, b) => a.board_rank - b.board_rank),
       })),
     [visible],
   );
 
-  // Mouse: drag after 4px. Touch: press-and-hold to lift, so a plain swipe
-  // still scrolls the board.
   const openContact = openId
     ? (contacts.find((c) => c.id === openId) ?? null)
     : null;
 
+  // Mouse: drag after 4px. Touch: press-and-hold to lift, so a plain swipe
+  // still scrolls the board.
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, {
@@ -136,16 +167,16 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       ?.focus();
   }
 
-  // Move `contact` into `status`, before card `beforeId` (null = end).
+  // Move `contact` into `target`, before card `beforeId` (null = end).
   // Optimistic: state first, then the server action; revert on error.
-  function commitMove(
+  function commitPlace(
     contact: BoardContact,
-    status: ContactStatus,
+    target: GroupKey,
     beforeId: string | null,
   ) {
-    const column = columns.find((c) => c.status === status);
-    if (!column) return;
-    const cards = column.cards.filter((c) => c.id !== contact.id);
+    const group = groups.find((g) => g.key === target);
+    if (!group) return;
+    const cards = group.cards.filter((c) => c.id !== contact.id);
     const foundIndex = beforeId
       ? cards.findIndex((c) => c.id === beforeId)
       : -1;
@@ -161,14 +192,19 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
             ? prev + 1
             : (prev + next) / 2;
 
+    const change = transitionFor(contact, target);
     const snapshot = contacts;
     setContacts((all) =>
       all.map((c) =>
-        c.id === contact.id ? { ...c, status, board_rank: rank } : c,
+        c.id === contact.id ? { ...c, ...change, board_rank: rank } : c,
       ),
     );
     startTransition(async () => {
-      const { error } = await moveContact(contact.id, status, rank);
+      const { error } = await placeContact(contact.id, {
+        ...(change.status ? { status: change.status } : {}),
+        ...(change.approach ? { approach: change.approach } : {}),
+        boardRank: rank,
+      });
       if (error) {
         setContacts(snapshot);
         setNotice(error);
@@ -176,10 +212,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     });
   }
 
-  // Add a contact at the top of "To contact", then focus its card.
+  // Add a contact at the top of "Direct contact" (or "Applied" per the
+  // form), then focus its card.
   async function handleCreate(fields: ContactFields): Promise<string | null> {
+    const targetGroup = fields.approach === "applied" ? "applied" : "direct";
     const ranks = contacts
-      .filter((c) => c.status === "to_contact")
+      .filter((c) => groupOf(c) === targetGroup)
       .map((c) => c.board_rank);
     const rank = ranks.length ? Math.min(...ranks) - 1 : Date.now() / 1000;
 
@@ -221,16 +259,17 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       const targetId = overId.slice(5);
       if (targetId === contact.id) return;
       const target = contacts.find((c) => c.id === targetId);
-      if (target) commitMove(contact, target.status, targetId);
-    } else if (overId.startsWith("col:")) {
-      commitMove(contact, overId.slice(4) as ContactStatus, null);
+      if (target) commitPlace(contact, groupOf(target), targetId);
+    } else if (overId.startsWith("group:")) {
+      commitPlace(contact, overId.slice(6) as GroupKey, null);
     }
   }
 
-  // Arrows move focus between cards; Ctrl (or Cmd) + arrows move the card.
+  // ←/→ walk cards in a group, ↑/↓ jump groups; with Ctrl (or Cmd) the
+  // same keys move the card instead.
   function onCardKeyDown(event: React.KeyboardEvent, contact: BoardContact) {
-    const colIndex = CONTACT_STATUSES.indexOf(contact.status);
-    const cards = columns[colIndex].cards;
+    const groupIndex = groups.findIndex((g) => g.key === groupOf(contact));
+    const cards = groups[groupIndex].cards;
     const cardIndex = cards.findIndex((c) => c.id === contact.id);
     const move = event.ctrlKey || event.metaKey;
 
@@ -241,44 +280,38 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       case "Enter":
         setOpenId(contact.id);
         break;
-      case "ArrowUp":
+      case "ArrowLeft":
         if (move && cardIndex > 0) {
-          commitMove(contact, contact.status, cards[cardIndex - 1].id);
+          commitPlace(contact, groups[groupIndex].key, cards[cardIndex - 1].id);
           focusSoon();
         } else if (!move) {
           focusCard(cards[cardIndex - 1]?.id);
         }
         break;
-      case "ArrowDown":
+      case "ArrowRight":
         if (move && cardIndex < cards.length - 1) {
-          commitMove(contact, contact.status, cards[cardIndex + 2]?.id ?? null);
+          commitPlace(
+            contact,
+            groups[groupIndex].key,
+            cards[cardIndex + 2]?.id ?? null,
+          );
           focusSoon();
         } else if (!move) {
           focusCard(cards[cardIndex + 1]?.id);
         }
         break;
-      case "ArrowLeft":
-      case "ArrowRight": {
-        const dir = event.key === "ArrowLeft" ? -1 : 1;
+      case "ArrowUp":
+      case "ArrowDown": {
+        const dir = event.key === "ArrowUp" ? -1 : 1;
+        const target = groups[groupIndex + dir];
+        if (!target) break;
         if (move) {
-          const target = CONTACT_STATUSES[colIndex + dir];
-          if (target) {
-            commitMove(contact, target, null);
-            focusSoon();
-          }
+          commitPlace(contact, target.key, null);
+          focusSoon();
         } else {
-          for (
-            let i = colIndex + dir;
-            i >= 0 && i < columns.length;
-            i += dir
-          ) {
-            const neighbor = columns[i].cards;
-            if (neighbor.length > 0) {
-              focusCard(
-                neighbor[Math.min(cardIndex, neighbor.length - 1)].id,
-              );
-              break;
-            }
+          const neighbor = target.cards;
+          if (neighbor.length > 0) {
+            focusCard(neighbor[Math.min(cardIndex, neighbor.length - 1)].id);
           }
         }
         break;
@@ -292,127 +325,125 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   return (
     <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          ref={searchRef}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key !== "Escape") return;
-            if (query) setQuery("");
-            else e.currentTarget.blur();
-          }}
-          placeholder="Search — press /"
-          aria-label="Search contacts"
-          className="w-full sm:w-search"
-        />
-        <Button onClick={() => setQuickAddOpen(true)}>
-          <Plus />
-          New contact
-        </Button>
-        <span className="text-neutral-tertiary">
-          {q ? `${visible.length} of ${contacts.length}` : contacts.length}{" "}
-          contacts
-        </span>
-        <span aria-live="polite" className="text-danger">
-          {notice}
-        </span>
-      </div>
-
-      {contacts.length === 0 && (
-        <p className="text-neutral-secondary">
-          No contacts yet — press{" "}
-          <kbd className="rounded-sm border border-neutral-primary bg-neutral-secondary px-1">
-            C
-          </kbd>{" "}
-          or click New contact to add the first one.
-        </p>
-      )}
-
-      <DndContext
-        id="outreach-board"
-        sensors={sensors}
-        collisionDetection={collisionDetection}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={() => setDragged(null)}
-      >
-        {/* All 9 columns wrap inside the container — nothing off-screen. */}
-        <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
-          {columns.map((column) => (
-            <BoardColumn
-              key={column.status}
-              column={column}
-              onCardKeyDown={onCardKeyDown}
-              onCardOpen={(contact) => {
-                if (suppressClickRef.current) return;
-                setOpenId(contact.id);
-              }}
-            />
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            ref={searchRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== "Escape") return;
+              if (query) setQuery("");
+              else e.currentTarget.blur();
+            }}
+            placeholder="Search — press /"
+            aria-label="Search contacts"
+            className="w-full sm:w-search"
+          />
+          <Button size="sm" onClick={() => setQuickAddOpen(true)}>
+            <Plus />
+            New contact
+          </Button>
+          <span className="text-neutral-tertiary">
+            {q ? `${visible.length} of ${contacts.length}` : contacts.length}{" "}
+            contacts
+          </span>
+          <span aria-live="polite" className="text-danger">
+            {notice}
+          </span>
         </div>
-        <DragOverlay>
-          {dragged && (
-            <div className="glass flex w-column cursor-grabbing flex-col gap-2 rounded-lg border-brand p-4 text-sm">
-              <ContactCardBody contact={dragged} />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
-      </div>
 
-      <QuickAddDialog
-        open={quickAddOpen}
-        onOpenChange={setQuickAddOpen}
-        onCreate={handleCreate}
-      />
-      {openContact && (
-        <ContactPanel
-          contact={openContact}
-          onClose={() => {
-            const id = openId;
-            setOpenId(null);
-            // Hand focus back to the card the panel came from.
-            requestAnimationFrame(() => focusCard(id ?? undefined));
-          }}
-          onPatch={patchContact}
-          onDeleted={(id) => {
-            setOpenId(null);
-            setContacts((all) => all.filter((c) => c.id !== id));
-          }}
+        {contacts.length === 0 && (
+          <p className="text-neutral-secondary">
+            No contacts yet — press{" "}
+            <kbd className="rounded-sm border border-neutral-primary bg-neutral-secondary px-1">
+              C
+            </kbd>{" "}
+            or click New contact to add the first one.
+          </p>
+        )}
+
+        <DndContext
+          id="outreach-board"
+          sensors={sensors}
+          collisionDetection={collisionDetection}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => setDragged(null)}
+        >
+          <div className="flex flex-col gap-8">
+            {groups.map((group) => (
+              <BoardGroup
+                key={group.key}
+                group={group}
+                onCardKeyDown={onCardKeyDown}
+                onCardOpen={(contact) => {
+                  if (suppressClickRef.current) return;
+                  setOpenId(contact.id);
+                }}
+              />
+            ))}
+          </div>
+          <DragOverlay>
+            {dragged && (
+              <div className="glass flex w-column cursor-grabbing flex-col gap-2 rounded-lg border-brand p-4 text-sm">
+                <ContactCardBody contact={dragged} />
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+
+        <QuickAddDialog
+          open={quickAddOpen}
+          onOpenChange={setQuickAddOpen}
+          onCreate={handleCreate}
         />
-      )}
+        {openContact && (
+          <ContactPanel
+            contact={openContact}
+            onClose={() => {
+              const id = openId;
+              setOpenId(null);
+              // Hand focus back to the card the panel came from.
+              requestAnimationFrame(() => focusCard(id ?? undefined));
+            }}
+            onPatch={patchContact}
+            onDeleted={(id) => {
+              setOpenId(null);
+              setContacts((all) => all.filter((c) => c.id !== id));
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
-function BoardColumn({
-  column,
+function BoardGroup({
+  group,
   onCardKeyDown,
   onCardOpen,
 }: {
-  column: Column;
+  group: Group;
   onCardKeyDown: (event: React.KeyboardEvent, contact: BoardContact) => void;
   onCardOpen: (contact: BoardContact) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `col:${column.status}` });
+  const { setNodeRef, isOver } = useDroppable({ id: `group:${group.key}` });
 
   return (
-    <section className="flex min-w-0 flex-col gap-2">
-      <header className="flex items-baseline gap-2 px-1">
-        <h2 className="font-medium text-neutral-secondary">
-          {STATUS_LABELS[column.status]}
-        </h2>
-        <span className="text-neutral-tertiary">{column.cards.length}</span>
+    <section className="flex flex-col gap-6">
+      {/* 24px between the headline and its group (owner spec). */}
+      <header className="flex items-baseline gap-2">
+        <h2 className="text-lg font-medium">{group.title}</h2>
+        <span className="text-neutral-tertiary">{group.cards.length}</span>
       </header>
       <div
         ref={setNodeRef}
         className={cn(
-          "flex flex-col gap-4 rounded-lg",
+          "grid items-start gap-4 rounded-lg [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]",
           isOver && "bg-neutral-secondary",
         )}
       >
-        {column.cards.map((contact) => (
+        {group.cards.map((contact) => (
           <ContactCard
             key={contact.id}
             contact={contact}
@@ -420,8 +451,8 @@ function BoardColumn({
             onOpen={() => onCardOpen(contact)}
           />
         ))}
-        {column.cards.length === 0 && (
-          <div className="h-16 shrink-0 rounded-lg border border-dashed border-neutral-secondary" />
+        {group.cards.length === 0 && (
+          <div className="h-16 rounded-lg border border-dashed border-neutral-secondary" />
         )}
       </div>
     </section>

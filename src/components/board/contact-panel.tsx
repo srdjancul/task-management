@@ -17,13 +17,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { deleteContact, updateContact } from "@/lib/actions/contacts";
+import {
+  deleteContact,
+  placeContact,
+  updateContact,
+} from "@/lib/actions/contacts";
 import { createTouch, deleteTouch } from "@/lib/actions/touches";
 import {
+  CONTACT_STATUSES,
   STATUS_LABELS,
   TOUCH_CHANNELS,
   TOUCH_DIRECTIONS,
   type BoardContact,
+  type ContactStatus,
   type ContactTouch,
   type TouchChannel,
   type TouchDirection,
@@ -215,6 +221,19 @@ export function ContactPanel({
     });
   }
 
+  function handleStatusChange(status: ContactStatus) {
+    const previous = contact.status;
+    setError(null);
+    onPatch(contact.id, { status });
+    startTransition(async () => {
+      const { error: saveError } = await placeContact(contact.id, { status });
+      if (saveError) {
+        onPatch(contact.id, { status: previous });
+        setError(saveError);
+      }
+    });
+  }
+
   function handleDeleteContact() {
     startDeleteTransition(async () => {
       const { error: deleteError } = await deleteContact(contact.id);
@@ -278,18 +297,24 @@ export function ContactPanel({
                   {meta && (
                     <p className="truncate text-neutral-secondary">{meta}</p>
                   )}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     <ApproachBadge approach={contact.approach} />
-                    {/* Owner rule: rejected shows red. */}
-                    <Badge
-                      variant={
-                        contact.status === "rejected"
-                          ? "destructive"
-                          : "secondary"
+                    {/* Status changes live here now that the board groups
+                        by approach. */}
+                    <Select
+                      aria-label="Status"
+                      value={contact.status}
+                      onChange={(e) =>
+                        handleStatusChange(e.target.value as ContactStatus)
                       }
+                      className="w-auto"
                     >
-                      {STATUS_LABELS[contact.status]}
-                    </Badge>
+                      {CONTACT_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABELS[s]}
+                        </option>
+                      ))}
+                    </Select>
                     {sourceHref && (
                       <a
                         href={sourceHref}

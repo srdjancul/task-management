@@ -29,6 +29,9 @@
 
   --white: #f8f8f8;
   --white-pure: #ffffff;
+  --black-pure: #000000;
+  --grey-100: #e6e6ea;
+  --grey-200: #d0d0d6;
   --grey-400: #9c9c9c;
   --grey-500: #6c6c72;
   --grey-600: #4a4a50;
@@ -89,8 +92,10 @@
   --background-color-neutral-secondary-pressed: var(--white-a20);
   --background-color-neutral-tertiary: var(--white-a14);
   --background-color-neutral-tertiary-hovered: var(--white-a20);
-  --background-color-neutral-inverse: var(--white);
-  --background-color-neutral-inverse-hovered: var(--white-pure);
+  /* Inverse = the white primary-action surface (buttons, active tabs). */
+  --background-color-neutral-inverse: var(--white-pure);
+  --background-color-neutral-inverse-hovered: var(--grey-100);
+  --background-color-neutral-inverse-pressed: var(--grey-200);
 
   --background-color-brand-primary: var(--teal-500);
   --background-color-brand-primary-hovered: var(--teal-600);
@@ -119,7 +124,7 @@
   --text-color-neutral-primary-disabled: var(--grey-600);
   --text-color-neutral-secondary: var(--grey-400);
   --text-color-neutral-tertiary: var(--grey-500);
-  --text-color-neutral-inverse: var(--black-900);
+  --text-color-neutral-inverse: var(--black-pure);
 
   --text-color-brand-primary: var(--teal-500);
   --text-color-brand-secondary: var(--teal-100);

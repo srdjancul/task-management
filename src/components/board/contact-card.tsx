@@ -4,8 +4,21 @@ import * as React from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 import { Badge } from "@/components/ui/badge";
-import type { BoardContact, ContactApproach } from "@/lib/contact-constants";
+import {
+  STATUS_LABELS,
+  type BoardContact,
+  type ContactApproach,
+  type ContactStatus,
+} from "@/lib/contact-constants";
 import { cn } from "@/lib/utils";
+
+const DAY_MS = 86_400_000;
+
+export function daysSinceTouch(contact: BoardContact): number | null {
+  if (!contact.last_touch_at) return null;
+  const ms = Date.now() - new Date(contact.last_touch_at).getTime();
+  return Math.max(0, Math.floor(ms / DAY_MS));
+}
 
 // Owner rule: "applied" gets the green badge, "direct" stays quiet.
 export function ApproachBadge({ approach }: { approach: ContactApproach }) {
@@ -18,15 +31,22 @@ export function ApproachBadge({ approach }: { approach: ContactApproach }) {
   );
 }
 
-const DAY_MS = 86_400_000;
-
-export function daysSinceTouch(contact: BoardContact): number | null {
-  if (!contact.last_touch_at) return null;
-  const ms = Date.now() - new Date(contact.last_touch_at).getTime();
-  return Math.max(0, Math.floor(ms / DAY_MS));
+// Status on the card, since the board groups by approach, not status.
+// Owner rule: rejected shows red; won earns green.
+export function StatusBadge({ status }: { status: ContactStatus }) {
+  const variant =
+    status === "rejected"
+      ? "destructive"
+      : status === "won"
+        ? "success"
+        : status === "ghosted"
+          ? "warning"
+          : "secondary";
+  return <Badge variant={variant}>{STATUS_LABELS[status]}</Badge>;
 }
 
-// Inner content, shared by the card and the drag overlay.
+// Inner content, shared by the card and the drag overlay. Every card
+// renders the same three rows so all cards are the same height.
 export function ContactCardBody({ contact }: { contact: BoardContact }) {
   const days = daysSinceTouch(contact);
   const meta = [contact.position, contact.company].filter(Boolean).join(" · ");
@@ -36,11 +56,9 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
       <span className="truncate font-medium">
         {contact.first_name} {contact.last_name}
       </span>
-      {meta && (
-        <span className="truncate text-neutral-secondary">{meta}</span>
-      )}
-      <span className="flex items-center gap-2">
-        <ApproachBadge approach={contact.approach} />
+      <span className="truncate text-neutral-secondary">{meta || "—"}</span>
+      <span className="flex items-center gap-2 pt-1">
+        <StatusBadge status={contact.status} />
         <span className="text-neutral-tertiary">{contact.touch_count}×</span>
         <span
           className={cn(

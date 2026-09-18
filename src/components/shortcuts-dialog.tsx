@@ -12,8 +12,10 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
     rows: [
       ["C", "New contact"],
       ["/", "Search"],
-      ["↑ ↓ ← →", "Move between cards"],
-      ["Ctrl + arrows", "Move the focused card"],
+      ["← →", "Walk cards in a group"],
+      ["↑ ↓", "Jump between groups"],
+      ["Ctrl + ← →", "Reorder the focused card"],
+      ["Ctrl + ↑ ↓", "Move the card to another group"],
       ["Enter", "Open the focused contact"],
       ["Esc", "Close panel / clear search"],
     ],

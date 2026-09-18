@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const linkClass =
-  "inline-flex h-8 items-center rounded-base px-3 text-sm transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+  "inline-flex h-8 items-center rounded-full px-3 text-sm transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
 export function PlannerViewToggle({
   date,
@@ -20,7 +20,7 @@ export function PlannerViewToggle({
         className={cn(
           linkClass,
           active === "day"
-            ? "bg-neutral-secondary font-medium text-neutral-primary"
+            ? "bg-neutral-inverse font-medium text-neutral-inverse"
             : "text-neutral-secondary hover:text-neutral-primary",
         )}
       >
@@ -32,7 +32,7 @@ export function PlannerViewToggle({
         className={cn(
           linkClass,
           active === "week"
-            ? "bg-neutral-secondary font-medium text-neutral-primary"
+            ? "bg-neutral-inverse font-medium text-neutral-inverse"
             : "text-neutral-secondary hover:text-neutral-primary",
         )}
       >

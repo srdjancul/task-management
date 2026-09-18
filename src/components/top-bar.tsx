@@ -21,9 +21,10 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
             href={tab.href}
             aria-current={active === tab.key ? "page" : undefined}
             className={cn(
-              "rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+              "inline-flex h-8 items-center rounded-full px-3 outline-none transition-colors",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
               active === tab.key
-                ? "font-medium text-neutral-primary"
+                ? "bg-neutral-inverse font-medium text-neutral-inverse"
                 : "text-neutral-secondary hover:text-neutral-primary",
             )}
           >
@@ -34,7 +35,7 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
       <div className="flex items-center gap-1">
         <ShortcutsDialog />
         <form action={signOut}>
-          <Button type="submit" variant="secondary" appearance="outline">
+          <Button type="submit" variant="secondary" appearance="outline" size="sm">
             Sign out
           </Button>
         </form>

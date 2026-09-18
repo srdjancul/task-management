@@ -252,9 +252,13 @@ export function PlannerDay({
           {week.map((iso) => (
             <Button
               key={iso}
-              variant={iso === date ? "secondary" : "ghost"}
+              size="sm"
+              variant={iso === date ? "primary" : "ghost"}
               onClick={() => goTo(iso)}
-              className={cn(iso === today && "text-brand-primary")}
+              className={cn(
+                "rounded-full",
+                iso === today && iso !== date && "text-brand-primary",
+              )}
             >
               {stripFormat.format(parseISODate(iso))}{" "}
               {parseISODate(iso).getDate()}
@@ -284,7 +288,7 @@ export function PlannerDay({
           </span>
         )}
         {date !== today && (
-          <Button variant="ghost" onClick={() => goTo(today)}>
+          <Button variant="ghost" size="sm" onClick={() => goTo(today)}>
             Today
           </Button>
         )}

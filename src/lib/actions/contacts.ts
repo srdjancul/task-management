@@ -19,25 +19,44 @@ function invalidFields(fields: ContactFields): string | null {
   return null;
 }
 
-// Persist a card move: new column (status) and/or new position in the
-// column (board_rank). RLS limits every query here to the owner's rows.
-export async function moveContact(
+// Persist a card placement: any of status, approach and board_rank.
+// Dragging between board groups changes approach and/or status; the
+// panel's status select changes status alone. RLS limits every query
+// here to the owner's rows.
+export async function placeContact(
   id: string,
-  status: ContactStatus,
-  boardRank: number,
+  patch: {
+    status?: ContactStatus;
+    approach?: (typeof APPROACHES)[number];
+    boardRank?: number;
+  },
 ): Promise<ActionResult> {
-  if (!CONTACT_STATUSES.includes(status) || !Number.isFinite(boardRank)) {
-    return { error: "Invalid move." };
+  const update: {
+    status?: ContactStatus;
+    approach?: (typeof APPROACHES)[number];
+    board_rank?: number;
+  } = {};
+  if (patch.status !== undefined) {
+    if (!CONTACT_STATUSES.includes(patch.status))
+      return { error: "Invalid status." };
+    update.status = patch.status;
   }
+  if (patch.approach !== undefined) {
+    if (!APPROACHES.includes(patch.approach))
+      return { error: "Invalid approach." };
+    update.approach = patch.approach;
+  }
+  if (patch.boardRank !== undefined) {
+    if (!Number.isFinite(patch.boardRank)) return { error: "Invalid move." };
+    update.board_rank = patch.boardRank;
+  }
+  if (Object.keys(update).length === 0) return { error: "Nothing to save." };
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("contacts")
-    .update({ status, board_rank: boardRank })
-    .eq("id", id);
+  const { error } = await supabase.from("contacts").update(update).eq("id", id);
 
   if (error) {
-    console.error("moveContact failed:", error.message);
+    console.error("placeContact failed:", error.message);
     return { error: "Move failed — put back." };
   }
   return { error: null };
