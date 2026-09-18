@@ -98,6 +98,9 @@
   --background-color-brand-secondary: var(--purple-900);
   --background-color-brand-secondary-hovered: var(--purple-700);
 
+  /* App-level scrim behind dialogs/panels; grey-900 at 60%, not a new hue. */
+  --background-color-overlay: color-mix(in srgb, var(--grey-900) 60%, transparent);
+
   --background-color-success: var(--green-500);
   --background-color-warning: var(--yellow-500);
   --background-color-danger: var(--red-500);
@@ -204,6 +207,7 @@
    * ---------------------------------------------------------------------- */
   --container-column: 256px;
   --container-search: 320px;
+  --container-panel: 400px;
 
   /* ------------------------------------------------------------------------
    * Radius — approved 2026-09-18. Figma lists the names only; these values

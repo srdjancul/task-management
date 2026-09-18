@@ -217,7 +217,9 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      start_time_block: { Args: { block_id: string }; Returns: undefined }
+      stop_running_time_blocks: { Args: never; Returns: undefined }
+      stop_time_block: { Args: { block_id: string }; Returns: undefined }
     }
     Enums: {
       block_category: "research" | "client_work" | "internal"

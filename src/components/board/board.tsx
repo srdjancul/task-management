@@ -16,12 +16,18 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 
+import { Plus } from "lucide-react";
+
 import {
   ContactCard,
   ContactCardBody,
 } from "@/components/board/contact-card";
+import { ContactPanel } from "@/components/board/contact-panel";
+import { QuickAddDialog } from "@/components/board/quick-add-dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { moveContact } from "@/lib/actions/contacts";
+import { createContact, moveContact } from "@/lib/actions/contacts";
+import type { ContactFields } from "@/lib/contact-constants";
 import {
   CONTACT_STATUSES,
   STATUS_LABELS,
@@ -49,8 +55,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   const [query, setQuery] = React.useState("");
   const [dragged, setDragged] = React.useState<BoardContact | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+  const [openId, setOpenId] = React.useState<string | null>(null);
+  const [quickAddOpen, setQuickAddOpen] = React.useState(false);
   const searchRef = React.useRef<HTMLInputElement>(null);
   const boardRef = React.useRef<HTMLDivElement>(null);
+  // A click fires right after a drop; ignore it so drags don't open panels.
+  const suppressClickRef = React.useRef(false);
   const [, startTransition] = React.useTransition();
 
   // Server data changed (navigation, refresh) → adopt it.
@@ -60,18 +70,25 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     setContacts(initial);
   }
 
-  // "/" focuses search from anywhere outside a field.
+  // Global shortcuts while no dialog is open: "/" focuses search, "C"
+  // opens quick add.
   React.useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "/" || event.defaultPrevented) return;
+      if (event.defaultPrevented || quickAddOpen || openId) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, [contenteditable]")) return;
-      event.preventDefault();
-      searchRef.current?.focus();
+      if (event.key === "/") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      } else if (event.key === "c" || event.key === "C") {
+        event.preventDefault();
+        setQuickAddOpen(true);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [quickAddOpen, openId]);
 
   React.useEffect(() => {
     if (!notice) return;
@@ -101,6 +118,10 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
   // Mouse: drag after 4px. Touch: press-and-hold to lift, so a plain swipe
   // still scrolls the board.
+  const openContact = openId
+    ? (contacts.find((c) => c.id === openId) ?? null)
+    : null;
+
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, {
@@ -155,12 +176,41 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     });
   }
 
+  // Add a contact at the top of "To contact", then focus its card.
+  async function handleCreate(fields: ContactFields): Promise<string | null> {
+    const ranks = contacts
+      .filter((c) => c.status === "to_contact")
+      .map((c) => c.board_rank);
+    const rank = ranks.length ? Math.min(...ranks) - 1 : Date.now() / 1000;
+
+    const { contact, error } = await createContact(fields, rank);
+    if (error || !contact) return error ?? "Could not save the contact.";
+
+    setContacts((all) => [
+      { ...contact, touch_count: 0, last_touch_at: null },
+      ...all,
+    ]);
+    setQuickAddOpen(false);
+    requestAnimationFrame(() => focusCard(contact.id));
+    return null;
+  }
+
+  function patchContact(id: string, patch: Partial<BoardContact>) {
+    setContacts((all) =>
+      all.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    );
+  }
+
   function onDragStart(event: DragStartEvent) {
+    suppressClickRef.current = true;
     setDragged((event.active.data.current?.contact as BoardContact) ?? null);
   }
 
   function onDragEnd(event: DragEndEvent) {
     setDragged(null);
+    setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
     const contact = event.active.data.current?.contact as
       | BoardContact
       | undefined;
@@ -188,6 +238,9 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       requestAnimationFrame(() => focusCard(contact.id));
 
     switch (event.key) {
+      case "Enter":
+        setOpenId(contact.id);
+        break;
       case "ArrowUp":
         if (move && cardIndex > 0) {
           commitMove(contact, contact.status, cards[cardIndex - 1].id);
@@ -252,6 +305,10 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           aria-label="Search contacts"
           className="w-full sm:w-search"
         />
+        <Button onClick={() => setQuickAddOpen(true)}>
+          <Plus />
+          New contact
+        </Button>
         <span className="text-neutral-tertiary">
           {q ? `${visible.length} of ${contacts.length}` : contacts.length}{" "}
           contacts
@@ -275,6 +332,10 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
               key={column.status}
               column={column}
               onCardKeyDown={onCardKeyDown}
+              onCardOpen={(contact) => {
+                if (suppressClickRef.current) return;
+                setOpenId(contact.id);
+              }}
             />
           ))}
         </div>
@@ -286,6 +347,23 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           )}
         </DragOverlay>
       </DndContext>
+
+      <QuickAddDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onCreate={handleCreate}
+      />
+      {openContact && (
+        <ContactPanel
+          contact={openContact}
+          onClose={() => setOpenId(null)}
+          onPatch={patchContact}
+          onDeleted={(id) => {
+            setOpenId(null);
+            setContacts((all) => all.filter((c) => c.id !== id));
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -293,9 +371,11 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 function BoardColumn({
   column,
   onCardKeyDown,
+  onCardOpen,
 }: {
   column: Column;
   onCardKeyDown: (event: React.KeyboardEvent, contact: BoardContact) => void;
+  onCardOpen: (contact: BoardContact) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col:${column.status}` });
 
@@ -319,6 +399,7 @@ function BoardColumn({
             key={contact.id}
             contact={contact}
             onKeyDown={(e) => onCardKeyDown(e, contact)}
+            onOpen={() => onCardOpen(contact)}
           />
         ))}
         {column.cards.length === 0 && (

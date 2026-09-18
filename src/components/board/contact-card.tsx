@@ -4,8 +4,19 @@ import * as React from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 import { Badge } from "@/components/ui/badge";
-import type { BoardContact } from "@/lib/contact-constants";
+import type { BoardContact, ContactApproach } from "@/lib/contact-constants";
 import { cn } from "@/lib/utils";
+
+// Owner rule: "applied" gets the green badge, "direct" stays quiet.
+export function ApproachBadge({ approach }: { approach: ContactApproach }) {
+  return approach === "applied" ? (
+    <Badge variant="success">applied</Badge>
+  ) : (
+    <Badge variant="secondary" appearance="outline">
+      direct
+    </Badge>
+  );
+}
 
 const DAY_MS = 86_400_000;
 
@@ -29,9 +40,7 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
         <span className="truncate text-neutral-secondary">{meta}</span>
       )}
       <span className="flex items-center gap-2">
-        <Badge variant="secondary" appearance="outline">
-          {contact.approach}
-        </Badge>
+        <ApproachBadge approach={contact.approach} />
         <span className="text-neutral-tertiary">{contact.touch_count}×</span>
         <span
           className={cn(
@@ -53,9 +62,11 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
 export function ContactCard({
   contact,
   onKeyDown,
+  onOpen,
 }: {
   contact: BoardContact;
   onKeyDown: (event: React.KeyboardEvent) => void;
+  onOpen: () => void;
 }) {
   const drag = useDraggable({ id: `drag:${contact.id}`, data: { contact } });
   const drop = useDroppable({ id: `drop:${contact.id}` });
@@ -71,6 +82,7 @@ export function ContactCard({
       {...drag.attributes}
       {...drag.listeners}
       onKeyDown={onKeyDown}
+      onClick={onOpen}
       className={cn(
         "flex w-full shrink-0 cursor-grab touch-manipulation flex-col gap-1 rounded-base border border-neutral-secondary bg-neutral-secondary p-3 text-left text-sm",
         "outline-none transition-colors hover:border-neutral-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",

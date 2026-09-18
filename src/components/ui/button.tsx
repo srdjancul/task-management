@@ -24,6 +24,12 @@ const buttonVariants = cva(
           "disabled:bg-brand-primary-disabled",
         ],
         secondary: "text-neutral-primary",
+        // App-level: quiet chrome buttons (panel close, edit, row actions).
+        ghost: [
+          "bg-transparent text-neutral-secondary",
+          "hover:bg-neutral-secondary hover:text-neutral-primary",
+          "active:bg-neutral-secondary-pressed",
+        ],
         danger: [
           "bg-danger text-neutral-primary",
           "hover:bg-danger-hovered active:bg-danger-pressed",
@@ -37,6 +43,7 @@ const buttonVariants = cva(
       size: {
         sm: "h-8 gap-2 px-3 text-sm",
         icon: "size-8",
+        "icon-sm": "size-6",
       },
     },
     compoundVariants: [
