@@ -4,7 +4,10 @@ import * as React from "react";
 import { Pencil, X } from "lucide-react";
 import { Dialog } from "radix-ui";
 
-import { ApproachBadge } from "@/components/board/contact-card";
+import {
+  ApproachBadge,
+  daysSinceTouch,
+} from "@/components/board/contact-card";
 import {
   ContactFormFields,
   readContactFields,
@@ -59,6 +62,25 @@ function touchStats(touches: ContactTouch[]) {
 
 function byHappenedDesc(a: ContactTouch, b: ContactTouch) {
   return b.happened_at.localeCompare(a.happened_at);
+}
+
+// "last touch 5d ago", colored with the same 7d/14d urgency as the cards.
+function LastTouch({ contact }: { contact: BoardContact }) {
+  const days = daysSinceTouch(contact);
+  if (days === null) return null;
+  return (
+    <span
+      className={cn(
+        days >= 14
+          ? "text-danger"
+          : days >= 7
+            ? "text-warning"
+            : "text-neutral-tertiary",
+      )}
+    >
+      last touch {days === 0 ? "today" : `${days}d ago`}
+    </span>
+  );
 }
 
 export function ContactPanel({
@@ -278,6 +300,7 @@ export function ContactPanel({
                         Profile ↗
                       </a>
                     )}
+                    <LastTouch contact={contact} />
                   </div>
                 </div>
                 <Button
@@ -359,6 +382,11 @@ export function ContactPanel({
 
             {/* Timeline, newest first. */}
             <ul className="flex flex-col gap-3">
+              {touches?.length === 0 && (
+                <li className="text-neutral-tertiary">
+                  No touches yet — log the first one above.
+                </li>
+              )}
               {(touches ?? []).map((touch) => (
                 <li
                   key={touch.id}

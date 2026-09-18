@@ -58,7 +58,13 @@ export function ShortcutsDialog() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Keyboard shortcuts">
+        {/* Hidden on touch-sized screens — shortcuts need a keyboard. */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Keyboard shortcuts"
+          className="max-sm:hidden"
+        >
           <Keyboard />
         </Button>
       </Dialog.Trigger>
