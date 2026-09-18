@@ -6,6 +6,11 @@
  * (node 14002:66). The Figma page documents tokens as images, not Figma
  * variables, so values were transcribed from the panels by hand.
  *
+ * The app is DARK-ONLY (owner decision, 2026-09-18). The Figma file
+ * documents the light values; the primitives below are copied from it
+ * unchanged, and the semantic tokens are remapped onto the dark end of
+ * the same ramps. There is no light theme and no theme switch.
+ *
  * Tailwind's default palette, type scale, radii and spacing are cleared so
  * only Figma tokens generate utilities. Components use the utilities
  * (bg-brand-primary, text-neutral-secondary, p-4, rounded-base) and never
@@ -13,8 +18,8 @@
  */
 
 /* ---------------------------------------------------------------------------
- * Primitives — raw palette. Never used directly in components; semantic
- * tokens below point at these.
+ * Primitives — raw palette, as documented in Figma. Never used directly in
+ * components; semantic tokens below point at these.
  * ------------------------------------------------------------------------- */
 :root {
   --grey-50: #ffffff;
@@ -72,26 +77,26 @@
   --spacing-*: initial;
 
   /* ------------------------------------------------------------------------
-   * Background — bg-*
+   * Background — bg-*  (dark theme values)
    * ---------------------------------------------------------------------- */
-  --background-color-neutral-primary: var(--grey-50);
-  --background-color-neutral-primary-hovered: var(--grey-100);
-  --background-color-neutral-primary-pressed: var(--grey-200);
-  --background-color-neutral-primary-disabled: var(--grey-100);
-  --background-color-neutral-secondary: var(--grey-100);
-  --background-color-neutral-secondary-hovered: var(--grey-200);
-  --background-color-neutral-secondary-pressed: var(--grey-300);
-  --background-color-neutral-tertiary: var(--grey-200);
-  --background-color-neutral-tertiary-hovered: var(--grey-300);
-  --background-color-neutral-inverse: var(--grey-900);
-  --background-color-neutral-inverse-hovered: var(--grey-800);
+  --background-color-neutral-primary: var(--grey-900);
+  --background-color-neutral-primary-hovered: var(--grey-800);
+  --background-color-neutral-primary-pressed: var(--grey-700);
+  --background-color-neutral-primary-disabled: var(--grey-800);
+  --background-color-neutral-secondary: var(--grey-800);
+  --background-color-neutral-secondary-hovered: var(--grey-700);
+  --background-color-neutral-secondary-pressed: var(--grey-600);
+  --background-color-neutral-tertiary: var(--grey-700);
+  --background-color-neutral-tertiary-hovered: var(--grey-600);
+  --background-color-neutral-inverse: var(--grey-50);
+  --background-color-neutral-inverse-hovered: var(--grey-100);
 
   --background-color-brand-primary: var(--purple-500);
   --background-color-brand-primary-hovered: var(--purple-600);
   --background-color-brand-primary-pressed: var(--purple-700);
-  --background-color-brand-primary-disabled: var(--grey-300);
-  --background-color-brand-secondary: var(--purple-100);
-  --background-color-brand-secondary-hovered: var(--purple-300);
+  --background-color-brand-primary-disabled: var(--grey-700);
+  --background-color-brand-secondary: var(--purple-900);
+  --background-color-brand-secondary-hovered: var(--purple-700);
 
   --background-color-success: var(--green-500);
   --background-color-warning: var(--yellow-500);
@@ -104,31 +109,32 @@
   --background-color-danger-pressed: color-mix(in srgb, var(--red-700) 80%, var(--red-900));
 
   /* ------------------------------------------------------------------------
-   * Text — text-*
+   * Text — text-*  (dark theme values)
+   * text-neutral-inverse is the dark ink used on light or colored surfaces.
    * ---------------------------------------------------------------------- */
-  --text-color-neutral-primary: var(--grey-900);
-  --text-color-neutral-primary-disabled: var(--grey-400);
-  --text-color-neutral-secondary: var(--grey-600);
-  --text-color-neutral-tertiary: var(--grey-400);
-  --text-color-neutral-inverse: var(--grey-50);
+  --text-color-neutral-primary: var(--grey-50);
+  --text-color-neutral-primary-disabled: var(--grey-600);
+  --text-color-neutral-secondary: var(--grey-400);
+  --text-color-neutral-tertiary: var(--grey-500);
+  --text-color-neutral-inverse: var(--grey-900);
 
-  --text-color-brand-primary: var(--purple-600);
+  --text-color-brand-primary: var(--purple-300);
   --text-color-brand-secondary: var(--purple-500);
 
-  --text-color-success: var(--green-700);
-  --text-color-warning: var(--yellow-700);
-  --text-color-danger: var(--red-700);
-  --text-color-info: var(--blue-700);
+  --text-color-success: var(--green-500);
+  --text-color-warning: var(--yellow-500);
+  --text-color-danger: var(--red-500);
+  --text-color-info: var(--blue-500);
 
   /* ------------------------------------------------------------------------
    * Border — border-*  (also focus rings: ring-* / outline-*)
    * ---------------------------------------------------------------------- */
-  --border-color-neutral-primary: var(--grey-300);
-  --border-color-neutral-primary-hovered: var(--grey-400);
+  --border-color-neutral-primary: var(--grey-700);
+  --border-color-neutral-primary-hovered: var(--grey-600);
   --border-color-neutral-primary-pressed: var(--grey-500);
-  --border-color-neutral-primary-disabled: var(--grey-200);
-  --border-color-neutral-secondary: var(--grey-200);
-  --border-color-neutral-inverse: var(--grey-700);
+  --border-color-neutral-primary-disabled: var(--grey-800);
+  --border-color-neutral-secondary: var(--grey-800);
+  --border-color-neutral-inverse: var(--grey-300);
 
   --border-color-brand: var(--purple-500);
   --border-color-brand-hovered: var(--purple-600);
@@ -193,8 +199,15 @@
   --spacing-16: 64px;
 
   /* ------------------------------------------------------------------------
-   * Radius — PROVISIONAL. Figma lists the names (none, sm, base, lg, xl,
-   * 2xl, full) but shows no values. Confirm before building further.
+   * Layout widths — app-level, not in Figma (the Figma scale stops at 64px).
+   * Used as w-column, max-w-search etc.
+   * ---------------------------------------------------------------------- */
+  --container-column: 256px;
+  --container-search: 320px;
+
+  /* ------------------------------------------------------------------------
+   * Radius — approved 2026-09-18. Figma lists the names only; these values
+   * are the owner-confirmed set.
    * rounded-full is built into Tailwind.
    * ---------------------------------------------------------------------- */
   --radius-none: 0px;
@@ -213,7 +226,7 @@
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   body {

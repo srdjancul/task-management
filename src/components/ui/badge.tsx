@@ -12,10 +12,10 @@ const badgeVariants = cva(
       variant: {
         primary: "bg-neutral-inverse text-neutral-inverse",
         secondary: "bg-neutral-secondary text-neutral-primary",
-        destructive: "bg-danger text-neutral-inverse",
-        success: "bg-success text-neutral-primary",
-        info: "bg-info text-neutral-inverse",
-        warning: "bg-warning text-neutral-primary",
+        destructive: "bg-danger text-neutral-primary",
+        success: "bg-success text-neutral-inverse",
+        info: "bg-info text-neutral-primary",
+        warning: "bg-warning text-neutral-inverse",
       },
       appearance: {
         filled: "",

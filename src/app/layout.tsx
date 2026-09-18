@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla)
+          inject attributes into <body> and trip dev hydration warnings. */}
+      <body className="min-h-full" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

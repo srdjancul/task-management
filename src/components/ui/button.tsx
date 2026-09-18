@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
   [
     "inline-flex shrink-0 items-center justify-center whitespace-nowrap select-none",
-    "rounded-base border border-transparent font-medium outline-none",
+    "rounded-base border border-transparent font-medium outline-none transition-colors",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
     "disabled:pointer-events-none disabled:border-transparent disabled:text-neutral-primary-disabled",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -19,13 +19,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          "bg-brand-primary text-neutral-inverse",
+          "bg-brand-primary text-neutral-primary",
           "hover:bg-brand-primary-hovered active:bg-brand-primary-pressed",
           "disabled:bg-brand-primary-disabled",
         ],
         secondary: "text-neutral-primary",
         danger: [
-          "bg-danger text-neutral-inverse",
+          "bg-danger text-neutral-primary",
           "hover:bg-danger-hovered active:bg-danger-pressed",
           "disabled:bg-brand-primary-disabled",
         ],
