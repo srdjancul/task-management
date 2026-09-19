@@ -51,7 +51,6 @@ function Select({
         className={cn(
           "glass-input flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-base px-3 text-sm text-neutral-primary outline-none transition-colors",
           "hover:border-neutral-primary-hovered",
-          "focus-visible:border-brand",
           "disabled:pointer-events-none disabled:border-neutral-primary-disabled disabled:text-neutral-primary-disabled",
           "data-[placeholder]:text-neutral-faint",
           className,

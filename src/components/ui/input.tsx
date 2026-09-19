@@ -13,7 +13,6 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "glass-input h-10 w-full min-w-0 rounded-base px-3 text-sm text-neutral-primary outline-none transition-colors",
         "placeholder:text-neutral-faint",
         "hover:border-neutral-primary-hovered",
-        "focus-visible:border-brand",
         "aria-invalid:border-danger",
         "disabled:pointer-events-none disabled:border-neutral-primary-disabled disabled:text-neutral-primary-disabled",
         className,

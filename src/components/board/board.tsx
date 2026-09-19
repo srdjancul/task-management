@@ -328,7 +328,8 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-search">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-neutral-faint" />
+            {/* z-10: the input's backdrop blur paints above plain siblings. */}
+            <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-5 -translate-y-1/2 text-neutral-faint" />
             <Input
               ref={searchRef}
               value={query}
