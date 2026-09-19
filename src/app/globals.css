@@ -312,41 +312,62 @@
   }
 
   /*
-   * Fixed full-viewport background: near-black ground with soft purple
-   * light beams falling from the top (Amply effect). Rendered once behind
-   * everything; glass surfaces pick it up through their blur.
+   * Fixed full-viewport background: near-black ground with two soft
+   * purple glows falling from the top (Amply effect). Pure radial
+   * gradients — they fade to transparent in every direction, so there
+   * are no blur seams or rectangle edges. Each glow drifts slowly on a
+   * loop (transform/opacity only, compositor-cheap); the global
+   * prefers-reduced-motion rule freezes them.
    */
   .app-beams {
     position: fixed;
     inset: 0;
     z-index: -10;
+    overflow: hidden;
     pointer-events: none;
     background-color: var(--black-900);
-    background-image: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--purple-500) 45%, transparent),
-        transparent 65%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--purple-700) 38%, transparent),
-        transparent 55%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--purple-700) 32%, transparent),
-        transparent 50%
-      );
-    background-repeat: no-repeat;
-    background-position:
-      50% 0,
-      8% 0,
-      92% 0;
-    background-size:
-      36% 100%,
-      22% 100%,
-      22% 100%;
-    filter: blur(64px);
+  }
+
+  .app-beams::before,
+  .app-beams::after {
+    content: "";
+    position: absolute;
+    will-change: transform, opacity;
+  }
+
+  /* Wide main glow, top center. Oversized so drifting never shows an edge. */
+  .app-beams::before {
+    inset: -25% -20% auto -20%;
+    height: 110%;
+    background: radial-gradient(
+      45% 45% at 50% 22%,
+      color-mix(in srgb, var(--purple-500) 40%, transparent),
+      transparent 72%
+    );
+    animation: beam-drift 26s ease-in-out infinite alternate;
+  }
+
+  /* Deeper violet companion, offset right, counter-drifting. */
+  .app-beams::after {
+    inset: -35% -30% auto 15%;
+    height: 100%;
+    background: radial-gradient(
+      40% 45% at 50% 30%,
+      color-mix(in srgb, var(--purple-700) 38%, transparent),
+      transparent 70%
+    );
+    animation: beam-drift 34s ease-in-out infinite alternate-reverse;
+  }
+}
+
+@keyframes beam-drift {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+    opacity: 0.75;
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.1);
+    opacity: 1;
   }
 }
 
