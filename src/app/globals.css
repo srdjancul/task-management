@@ -287,20 +287,25 @@
     );
   }
 
-  /* Card tint always matches its badge hue (owner rule): to-contact is
-     blue, won is teal — flat fill + same-hue border, like the yellow one. */
+  /* Card tint always matches its badge hue (owner rule): every tinted
+     card uses the same diagonal gradient (10% → 1% → 10%) in its own
+     color, with a same-hue 10% border. */
   .glass-info {
     background-image: linear-gradient(
-      color-mix(in srgb, var(--blue-500) 10%, transparent),
-      color-mix(in srgb, var(--blue-500) 10%, transparent)
+      134deg,
+      color-mix(in srgb, var(--blue-500) 10%, transparent) 0%,
+      color-mix(in srgb, var(--blue-500) 1%, transparent) 31%,
+      color-mix(in srgb, var(--blue-500) 10%, transparent) 100%
     );
     border-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
   }
 
   .glass-success {
     background-image: linear-gradient(
-      color-mix(in srgb, var(--teal-500) 10%, transparent),
-      color-mix(in srgb, var(--teal-500) 10%, transparent)
+      134deg,
+      color-mix(in srgb, var(--teal-500) 10%, transparent) 0%,
+      color-mix(in srgb, var(--teal-500) 1%, transparent) 31%,
+      color-mix(in srgb, var(--teal-500) 10%, transparent) 100%
     );
     border-color: color-mix(in srgb, var(--teal-500) 10%, transparent);
   }
@@ -315,11 +320,13 @@
     );
   }
 
-  /* In-progress cards (node 47133:860): flat yellow tint, yellow border. */
+  /* In-progress cards: same diagonal gradient in yellow. */
   .glass-warning {
     background-image: linear-gradient(
-      color-mix(in srgb, var(--yellow-500) 10%, transparent),
-      color-mix(in srgb, var(--yellow-500) 10%, transparent)
+      134deg,
+      color-mix(in srgb, var(--yellow-500) 10%, transparent) 0%,
+      color-mix(in srgb, var(--yellow-500) 1%, transparent) 31%,
+      color-mix(in srgb, var(--yellow-500) 10%, transparent) 100%
     );
     border-color: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   }
