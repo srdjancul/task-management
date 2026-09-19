@@ -354,6 +354,17 @@
     background: var(--black-900);
   }
 
+  /* Accessibility: collapse all motion for people who ask for less. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   body {
     /* Page color comes from .app-beams (fixed, behind everything). */
     @apply font-sans text-sm font-regular text-neutral-primary antialiased;

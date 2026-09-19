@@ -92,7 +92,7 @@ export function PlannerWeek({
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           aria-label="Previous week"
           onClick={() => router.push(`/planner?d=${addDays(date, -7)}&view=week`)}
         >
@@ -101,7 +101,7 @@ export function PlannerWeek({
         <span className="font-medium">{rangeLabel}</span>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           aria-label="Next week"
           onClick={() => router.push(`/planner?d=${addDays(date, 7)}&view=week`)}
         >

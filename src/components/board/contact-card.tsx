@@ -95,6 +95,13 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
         <StatusBadge status={contact.status} />
         <span className="text-neutral-tertiary">{contact.touch_count}×</span>
         <span
+          title={
+            days === null
+              ? "Never touched"
+              : days === 0
+                ? "Last touch today"
+                : `Last touch ${days} day${days === 1 ? "" : "s"} ago`
+          }
           className={cn(
             "ml-auto",
             days !== null && days >= 14

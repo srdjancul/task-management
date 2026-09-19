@@ -15,7 +15,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 
 import {
   cardTone,
@@ -340,8 +340,21 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
               }}
               placeholder="Search — press /"
               aria-label="Search contacts"
-              className="pl-10"
+              className="pr-8 pl-10"
             />
+            {query && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery("");
+                  searchRef.current?.focus();
+                }}
+                className="absolute top-1/2 right-1 flex size-8 -translate-y-1/2 items-center justify-center rounded-sm text-neutral-tertiary outline-none hover:text-neutral-primary focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
           {/* Same height as the search input beside it. */}
           <Button onClick={() => setQuickAddOpen(true)}>
@@ -371,11 +384,18 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           onDragEnd={onDragEnd}
           onDragCancel={() => setDragged(null)}
         >
+          {q && visible.length === 0 && contacts.length > 0 && (
+            <p className="text-neutral-secondary">
+              No matches for “{query.trim()}” — check the spelling or clear
+              the search (Esc).
+            </p>
+          )}
           <div className="flex flex-col gap-8">
             {groups.map((group) => (
               <BoardGroup
                 key={group.key}
                 group={group}
+                searching={Boolean(q)}
                 onCardKeyDown={onCardKeyDown}
                 onCardOpen={(contact) => {
                   if (suppressClickRef.current) return;
@@ -426,14 +446,19 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
 function BoardGroup({
   group,
+  searching,
   onCardKeyDown,
   onCardOpen,
 }: {
   group: Group;
+  searching: boolean;
   onCardKeyDown: (event: React.KeyboardEvent, contact: BoardContact) => void;
   onCardOpen: (contact: BoardContact) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `group:${group.key}` });
+
+  // While filtering, an empty group is noise — hide it entirely.
+  if (searching && group.cards.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-4">

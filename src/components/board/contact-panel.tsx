@@ -360,7 +360,8 @@ export function ContactPanel({
             >
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">Log touch</span>
-                <span className="text-neutral-tertiary">T</span>
+                {/* Keyboard hint — pointless on touch. */}
+                <span className="text-neutral-tertiary max-sm:hidden">T</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">

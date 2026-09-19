@@ -242,7 +242,7 @@ export function PlannerDay({
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           aria-label="Previous day"
           onClick={() => goTo(addDays(date, date === monday ? -2 : -1))}
         >
@@ -266,7 +266,7 @@ export function PlannerDay({
         </div>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           aria-label="Next day"
           onClick={() =>
             goTo(addDays(date, addDays(date, 1) > week[5] ? 2 : 1))
@@ -420,21 +420,26 @@ function TaskList({
       <ul className="flex flex-col gap-1">
         {tasks.map((task) => (
           <li key={task.id} className="group flex items-center gap-2">
+            {/* 32px hit area around the 16px visual box — thumbs miss
+                anything smaller. */}
             <button
               type="button"
               role="checkbox"
               aria-checked={task.done}
               aria-label={task.title}
               onClick={() => onToggle(task)}
-              className={cn(
-                "flex size-4 shrink-0 items-center justify-center rounded-sm border outline-none transition-colors",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                task.done
-                  ? "border-brand bg-brand-primary text-neutral-primary"
-                  : "border-neutral-primary hover:border-neutral-primary-hovered",
-              )}
+              className="group/check -m-2 flex size-8 shrink-0 items-center justify-center rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-brand"
             >
-              {task.done && <Check className="size-3" />}
+              <span
+                className={cn(
+                  "flex size-4 items-center justify-center rounded-sm border transition-colors",
+                  task.done
+                    ? "border-brand bg-brand-primary text-neutral-inverse"
+                    : "border-neutral-primary group-hover/check:border-neutral-primary-hovered",
+                )}
+              >
+                {task.done && <Check className="size-3" />}
+              </span>
             </button>
             <span
               className={cn(
@@ -448,7 +453,8 @@ function TaskList({
               variant="ghost"
               size="icon-sm"
               aria-label={`Delete ${task.title}`}
-              className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+              // Hover reveal is invisible on touch — always show it there.
+              className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
               onClick={() => onDelete(task)}
             >
               <X />
