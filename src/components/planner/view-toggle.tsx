@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const linkClass =
-  "inline-flex h-8 items-center rounded-sm px-3 text-sm transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+  "inline-flex h-8 items-center rounded-base px-3 text-sm transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
 export function PlannerViewToggle({
   date,

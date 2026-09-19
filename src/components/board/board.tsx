@@ -439,11 +439,13 @@ function BoardGroup({
   const { setNodeRef, isOver } = useDroppable({ id: `group:${group.key}` });
 
   return (
-    <section className="flex flex-col gap-6">
-      {/* 24px between the headline and its group (owner spec). */}
-      <header className="flex items-baseline gap-2">
+    <section className="flex flex-col gap-4">
+      {/* 16px between the headline and its group (owner spec). */}
+      <header className="flex items-center gap-2">
         <h2 className="text-lg font-medium">{group.title}</h2>
-        <span className="text-neutral-tertiary">{group.cards.length}</span>
+        <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary">
+          {group.cards.length}
+        </span>
       </header>
       <div
         ref={setNodeRef}

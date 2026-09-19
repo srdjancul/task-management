@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 // Restyled to the Figma "badge" component (node 14006:1916).
 const badgeVariants = cva(
-  // Owner spec: badge padding 12x8, radius 4.
-  "inline-flex shrink-0 items-center gap-1 rounded-sm border border-transparent px-3 py-2 text-sm leading-none font-regular whitespace-nowrap [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+  // Owner spec: badge padding 12x8, radius 6.
+  "inline-flex shrink-0 items-center gap-1 rounded-base border border-transparent px-3 py-2 text-sm leading-none font-regular whitespace-nowrap [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -47,6 +47,11 @@ const badgeVariants = cva(
         variant: "info",
         appearance: "soft",
         className: "border-info-soft bg-info-soft text-info",
+      },
+      {
+        variant: "warning",
+        appearance: "soft",
+        className: "border-warning-soft bg-warning-soft text-warning",
       },
     ],
     defaultVariants: {

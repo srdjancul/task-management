@@ -120,6 +120,9 @@
   --background-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
   --background-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
   --background-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  --background-color-warning-soft: color-mix(in srgb, var(--yellow-500) 10%, transparent);
+  /* Neutral chip fill (headline counts): white at 10%. */
+  --background-color-neutral-soft: var(--white-a10);
 
   /* ------------------------------------------------------------------------
    * Text — text-*
@@ -162,6 +165,7 @@
   --border-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
   --border-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
   --border-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  --border-color-warning-soft: color-mix(in srgb, var(--yellow-500) 10%, transparent);
 
   --outline-color-brand: var(--teal-500);
   --ring-color-brand: var(--teal-500);
@@ -284,6 +288,15 @@
       color-mix(in srgb, var(--teal-500) 1%, transparent) 31%,
       color-mix(in srgb, var(--blue-500) 10%, transparent) 100%
     );
+  }
+
+  /* In-progress cards (node 47133:860): flat yellow tint, yellow border. */
+  .glass-warning {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--yellow-500) 10%, transparent),
+      color-mix(in srgb, var(--yellow-500) 10%, transparent)
+    );
+    border-color: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   }
 
   /*

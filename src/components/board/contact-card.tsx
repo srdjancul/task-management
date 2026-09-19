@@ -57,6 +57,14 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
       </Badge>
     );
   }
+  // In progress (node 47133:853): yellow soft chip.
+  if (status === "followed_up" || status === "in_conversation") {
+    return (
+      <Badge variant="warning" appearance="soft">
+        {STATUS_LABELS[status]}
+      </Badge>
+    );
+  }
   return <Badge variant="secondary">{STATUS_LABELS[status]}</Badge>;
 }
 
@@ -64,6 +72,8 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
 export function cardTone(status: ContactStatus): string | undefined {
   if (status === "rejected" || status === "ghosted") return "glass-danger";
   if (status === "to_contact" || status === "won") return "glass-positive";
+  if (status === "followed_up" || status === "in_conversation")
+    return "glass-warning";
   return undefined;
 }
 
