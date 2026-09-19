@@ -425,7 +425,7 @@ export function ContactPanel({
                     <span className="text-neutral-tertiary">
                       {formatWhen(touch.happened_at)}
                     </span>
-                    <Badge variant="secondary" appearance="outline">
+                    <Badge variant="secondary" appearance="outline" dot>
                       {touch.channel}
                     </Badge>
                     <span

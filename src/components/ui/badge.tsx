@@ -66,9 +66,15 @@ function Badge({
   variant,
   appearance,
   asChild = false,
+  dot = false,
+  children,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean;
+    // 6px cyan marker for informational chips (approach, channel, …).
+    dot?: boolean;
+  }) {
   const Comp = asChild ? Slot.Root : "span";
 
   return (
@@ -78,7 +84,15 @@ function Badge({
       data-appearance={appearance}
       className={cn(badgeVariants({ variant, appearance, className }))}
       {...props}
-    />
+    >
+      {dot && (
+        <span
+          aria-hidden
+          className="size-dot shrink-0 rounded-full bg-brand-primary"
+        />
+      )}
+      {children}
+    </Comp>
   );
 }
 

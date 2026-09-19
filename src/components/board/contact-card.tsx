@@ -23,9 +23,11 @@ export function daysSinceTouch(contact: BoardContact): number | null {
 // Owner rule: "applied" gets the green badge, "direct" stays quiet.
 export function ApproachBadge({ approach }: { approach: ContactApproach }) {
   return approach === "applied" ? (
-    <Badge variant="success">applied</Badge>
+    <Badge variant="success" dot>
+      applied
+    </Badge>
   ) : (
-    <Badge variant="secondary" appearance="outline">
+    <Badge variant="secondary" appearance="outline" dot>
       direct
     </Badge>
   );
