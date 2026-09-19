@@ -36,7 +36,7 @@ Everything sits behind login; there is exactly one user.
     teal = won,
     red = rejected & ghosted, grey glass = everything else.
   - "applied" = green badge; primary actions are white with black ink.
-  - Radii: badges/tabs/buttons/dropdowns 6, cards/inputs 10, dialogs 16.
+  - Radii: badges/tabs/buttons/dropdowns/inputs 6, cards 10, dialogs 16.
 
 ## Patterns
 

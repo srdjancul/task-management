@@ -234,8 +234,8 @@
   --container-panel: 400px;
 
   /* ------------------------------------------------------------------------
-   * Radius — owner spec 2026-09-19: badges/tabs 4 (sm), buttons 6 (base),
-   * cards + inputs 10 (lg), dialogs 16 (xl).
+   * Radius — owner spec 2026-09-19: badges, tabs, buttons, dropdowns and
+   * inputs 6 (base), cards 10 (lg), dialogs 16 (xl).
    * ---------------------------------------------------------------------- */
   --radius-none: 0px;
   --radius-sm: 4px;
