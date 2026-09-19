@@ -104,7 +104,8 @@ export function ContactPanel({
   const [editing, setEditing] = React.useState(false);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const channelRef = React.useRef<HTMLSelectElement>(null);
+  // The Select trigger is a button (Radix).
+  const channelRef = React.useRef<HTMLButtonElement>(null);
   const [deletePending, startDeleteTransition] = React.useTransition();
   const [, startTransition] = React.useTransition();
 
@@ -304,17 +305,15 @@ export function ContactPanel({
                     <Select
                       aria-label="Status"
                       value={contact.status}
-                      onChange={(e) =>
-                        handleStatusChange(e.target.value as ContactStatus)
+                      onValueChange={(v) =>
+                        handleStatusChange(v as ContactStatus)
                       }
                       className="w-auto"
-                    >
-                      {CONTACT_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {STATUS_LABELS[s]}
-                        </option>
-                      ))}
-                    </Select>
+                      options={CONTACT_STATUSES.map((s) => ({
+                        value: s,
+                        label: STATUS_LABELS[s],
+                      }))}
+                    />
                     {sourceHref && (
                       <a
                         href={sourceHref}
@@ -367,23 +366,23 @@ export function ContactPanel({
                     name="channel"
                     ref={channelRef}
                     defaultValue="email"
-                  >
-                    {TOUCH_CHANNELS.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </Select>
+                    options={TOUCH_CHANNELS.map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="touch-direction">Direction</Label>
-                  <Select id="touch-direction" name="direction" defaultValue="sent">
-                    {TOUCH_DIRECTIONS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </Select>
+                  <Select
+                    id="touch-direction"
+                    name="direction"
+                    defaultValue="sent"
+                    options={TOUCH_DIRECTIONS.map((d) => ({
+                      value: d,
+                      label: d,
+                    }))}
+                  />
                 </div>
               </div>
               <Input

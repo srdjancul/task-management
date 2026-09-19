@@ -2,20 +2,20 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-// No input in the Figma file yet; built from the same tokens as the
-// secondary outline button so the two sit together.
+// Finance-app input (node 47062:17141): glass-input surface, 10px radius,
+// faint placeholder.
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
       type={type}
       data-slot="input"
       className={cn(
-        "h-8 w-full min-w-0 rounded-base border border-neutral-primary bg-neutral-secondary px-3 text-sm text-neutral-primary outline-none transition-colors",
-        "placeholder:text-neutral-tertiary",
+        "glass-input h-10 w-full min-w-0 rounded-lg px-3 text-sm text-neutral-primary outline-none transition-colors",
+        "placeholder:text-neutral-faint",
         "hover:border-neutral-primary-hovered",
         "focus-visible:border-brand",
         "aria-invalid:border-danger",
-        "disabled:pointer-events-none disabled:border-neutral-primary-disabled disabled:bg-neutral-primary-disabled disabled:text-neutral-primary-disabled",
+        "disabled:pointer-events-none disabled:border-neutral-primary-disabled disabled:text-neutral-primary-disabled",
         className,
       )}
       {...props}

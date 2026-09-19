@@ -130,6 +130,8 @@
   --text-color-neutral-primary-disabled: var(--grey-600);
   --text-color-neutral-secondary: var(--grey-400);
   --text-color-neutral-tertiary: var(--grey-500);
+  /* Placeholder ink (finance-app input: white at 30%). */
+  --text-color-neutral-faint: var(--white-a30);
   --text-color-neutral-inverse: var(--black-pure);
 
   --text-color-brand-primary: var(--teal-500);
@@ -222,12 +224,13 @@
   --container-panel: 400px;
 
   /* ------------------------------------------------------------------------
-   * Radius — cards 12, panels/dialogs 16 (finance-app card style).
+   * Radius — owner spec 2026-09-19: badges/tabs 4 (sm), buttons 6 (base),
+   * cards + inputs 10 (lg), dialogs 16 (xl).
    * ---------------------------------------------------------------------- */
   --radius-none: 0px;
   --radius-sm: 4px;
-  --radius-base: 8px;
-  --radius-lg: 12px;
+  --radius-base: 6px;
+  --radius-lg: 10px;
   --radius-xl: 16px;
   --radius-2xl: 24px;
 
@@ -248,6 +251,16 @@
     border: 1px solid var(--white-a10);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
+  }
+
+  /*
+   * Input surface (finance-app node 47062:17141): vertical white-alpha
+   * gradient + white/10 border. Border color yields to border-* utilities
+   * (hover, focus, invalid).
+   */
+  .glass-input {
+    background: linear-gradient(180deg, transparent, var(--white-a10));
+    border: 1px solid var(--white-a10);
   }
 
   /*

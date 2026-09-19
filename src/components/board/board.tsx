@@ -15,7 +15,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import {
   cardTone,
@@ -327,19 +327,22 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
         <div className="flex flex-wrap items-center gap-3">
-          <Input
-            ref={searchRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== "Escape") return;
-              if (query) setQuery("");
-              else e.currentTarget.blur();
-            }}
-            placeholder="Search — press /"
-            aria-label="Search contacts"
-            className="w-full sm:w-search"
-          />
+          <div className="relative w-full sm:w-search">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-neutral-faint" />
+            <Input
+              ref={searchRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Escape") return;
+                if (query) setQuery("");
+                else e.currentTarget.blur();
+              }}
+              placeholder="Search — press /"
+              aria-label="Search contacts"
+              className="pl-10"
+            />
+          </div>
           <Button size="sm" onClick={() => setQuickAddOpen(true)}>
             <Plus />
             New contact

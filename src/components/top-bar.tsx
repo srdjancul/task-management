@@ -22,7 +22,7 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
             href={tab.href}
             aria-current={active === tab.key ? "page" : undefined}
             className={cn(
-              "inline-flex h-8 items-center rounded-full px-3 outline-none transition-colors",
+              "inline-flex h-8 items-center rounded-sm px-3 outline-none transition-colors",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
               active === tab.key
                 ? "bg-neutral-inverse font-medium text-neutral-inverse"

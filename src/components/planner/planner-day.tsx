@@ -256,7 +256,6 @@ export function PlannerDay({
               variant={iso === date ? "primary" : "ghost"}
               onClick={() => goTo(iso)}
               className={cn(
-                "rounded-full",
                 iso === today && iso !== date && "text-brand-primary",
               )}
             >

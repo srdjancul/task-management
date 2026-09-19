@@ -68,13 +68,8 @@ export function ContactFormFields({
             id={id("approach")}
             name="approach"
             defaultValue={defaults?.approach ?? "direct"}
-          >
-            {APPROACHES.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </Select>
+            options={APPROACHES.map((a) => ({ value: a, label: a }))}
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor={id("source_url")}>Source URL</Label>
