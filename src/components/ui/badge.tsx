@@ -19,6 +19,7 @@ const badgeVariants = cva(
         success: "bg-success text-neutral-inverse",
         info: "bg-info text-neutral-primary",
         warning: "bg-warning text-neutral-inverse",
+        pink: "bg-accent-pink text-neutral-inverse",
       },
       appearance: {
         filled: "",
@@ -52,6 +53,11 @@ const badgeVariants = cva(
         variant: "warning",
         appearance: "soft",
         className: "border-warning-soft bg-warning-soft text-warning",
+      },
+      {
+        variant: "pink",
+        appearance: "soft",
+        className: "border-pink-soft bg-pink-soft text-pink",
       },
     ],
     defaultVariants: {

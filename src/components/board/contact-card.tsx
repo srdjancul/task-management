@@ -67,6 +67,14 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
       </Badge>
     );
   }
+  // Replied (node 47135:912): pink soft chip.
+  if (status === "replied") {
+    return (
+      <Badge variant="pink" appearance="soft">
+        {STATUS_LABELS[status]}
+      </Badge>
+    );
+  }
   return <Badge variant="secondary">{STATUS_LABELS[status]}</Badge>;
 }
 
@@ -78,6 +86,7 @@ export function cardTone(status: ContactStatus): string | undefined {
   if (status === "won") return "glass-success";
   if (status === "followed_up" || status === "in_conversation")
     return "glass-warning";
+  if (status === "replied") return "glass-pink";
   return undefined;
 }
 

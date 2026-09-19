@@ -49,7 +49,7 @@ function Select({
         aria-label={ariaLabel}
         data-slot="select"
         className={cn(
-          "glass-input flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-lg px-3 text-sm text-neutral-primary outline-none transition-colors",
+          "glass-input flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-base px-3 text-sm text-neutral-primary outline-none transition-colors",
           "hover:border-neutral-primary-hovered",
           "focus-visible:border-brand",
           "disabled:pointer-events-none disabled:border-neutral-primary-disabled disabled:text-neutral-primary-disabled",
@@ -68,7 +68,7 @@ function Select({
         <SelectPrimitive.Content
           position="popper"
           sideOffset={4}
-          className="z-50 min-w-[var(--radix-select-trigger-width)] rounded-lg border border-neutral-secondary bg-neutral-primary-hovered p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0"
+          className="z-50 min-w-[var(--radix-select-trigger-width)] rounded-base border border-neutral-secondary bg-neutral-primary-hovered p-1 data-[state=open]:animate-in data-[state=open]:fade-in-0"
         >
           <SelectPrimitive.Viewport>
             {options.map((option) => (
