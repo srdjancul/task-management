@@ -42,8 +42,8 @@ const buttonVariants = cva(
         outline: "",
       },
       size: {
-        // Owner spec: 12px padding on buttons.
-        md: "gap-2 px-3 py-3 text-sm",
+        // Same height as inputs (h-10): adjacent controls match exactly.
+        md: "h-10 gap-2 px-3 text-sm",
         sm: "h-8 gap-2 px-3 text-sm",
         icon: "size-8",
         "icon-sm": "size-6",

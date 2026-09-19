@@ -25,10 +25,17 @@ Everything sits behind login; there is exactly one user.
   Tailwind's default palette/scales are cleared, so non-token utilities
   simply don't generate. New tokens (widths, scrims) go into `@theme`
   with a comment and need owner approval if they add a hue or typeface.
-- Type is Inter, weights ≤ 700; text-first, dense — this is a daily tool,
-  not a marketing page.
+- Type is Hanken Grotesk (free HK Grotesk), weights ≤ 700; text-first,
+  dense — this is a daily tool, not a marketing page.
 - shadcn/Radix supply behavior and a11y only; the look comes from tokens.
-  Owner rules: "applied" = green badge, "rejected" = red badge.
+- **Owner rules (hard):**
+  - Adjacent controls MUST be exactly the same height — a button next to
+    an input is h-10, next to a badge h-8, etc. Never eyeball it.
+  - A card's tint always matches its badge hue: blue = to contact,
+    yellow = in progress (followed up / in conversation), teal = won,
+    red = rejected & ghosted, grey glass = everything else.
+  - "applied" = green badge; primary actions are white with black ink.
+  - Radii: badges/tabs/buttons 6, cards/inputs 10, dialogs 16.
 
 ## Patterns
 

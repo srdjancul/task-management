@@ -171,9 +171,10 @@
   --ring-color-brand: var(--teal-500);
 
   /* ------------------------------------------------------------------------
-   * Typography — Inter. text-{size} carries its paired line height.
+   * Typography — Hanken Grotesk (free HK Grotesk, owner-approved
+   * 2026-09-19). text-{size} carries its paired line height.
    * ---------------------------------------------------------------------- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
 
   --text-sm: 14px;
   --text-sm--line-height: 20px;
@@ -281,13 +282,22 @@
     );
   }
 
-  .glass-positive {
+  /* Card tint always matches its badge hue (owner rule): to-contact is
+     blue, won is teal — flat fill + same-hue border, like the yellow one. */
+  .glass-info {
     background-image: linear-gradient(
-      134deg,
-      color-mix(in srgb, var(--teal-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--teal-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--blue-500) 10%, transparent) 100%
+      color-mix(in srgb, var(--blue-500) 10%, transparent),
+      color-mix(in srgb, var(--blue-500) 10%, transparent)
     );
+    border-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
+  }
+
+  .glass-success {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--teal-500) 10%, transparent),
+      color-mix(in srgb, var(--teal-500) 10%, transparent)
+    );
+    border-color: color-mix(in srgb, var(--teal-500) 10%, transparent);
   }
 
   /* In-progress cards (node 47133:860): flat yellow tint, yellow border. */

@@ -343,14 +343,11 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
               className="pl-10"
             />
           </div>
-          <Button size="sm" onClick={() => setQuickAddOpen(true)}>
+          {/* Same height as the search input beside it. */}
+          <Button onClick={() => setQuickAddOpen(true)}>
             <Plus />
             New contact
           </Button>
-          <span className="text-neutral-tertiary">
-            {q ? `${visible.length} of ${contacts.length}` : contacts.length}{" "}
-            contacts
-          </span>
           <span aria-live="polite" className="text-danger">
             {notice}
           </span>

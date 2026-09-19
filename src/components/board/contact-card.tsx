@@ -69,9 +69,11 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
 }
 
 // State tint for the card surface itself (over .glass).
+// Owner rule: the card tint always matches the badge hue.
 export function cardTone(status: ContactStatus): string | undefined {
   if (status === "rejected" || status === "ghosted") return "glass-danger";
-  if (status === "to_contact" || status === "won") return "glass-positive";
+  if (status === "to_contact") return "glass-info";
+  if (status === "won") return "glass-success";
   if (status === "followed_up" || status === "in_conversation")
     return "glass-warning";
   return undefined;

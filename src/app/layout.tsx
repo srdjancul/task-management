@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Hanken Grotesk — the free, Google-Fonts successor of HK Grotesk
+// (the finance design's typeface).
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
 });
 
@@ -24,7 +26,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${hanken.variable} h-full`}>
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla)
           inject attributes into <body> and trip dev hydration warnings. */}
       <body className="min-h-full" suppressHydrationWarning>
