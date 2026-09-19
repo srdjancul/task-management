@@ -33,9 +33,16 @@ export function ApproachBadge({ approach }: { approach: ContactApproach }) {
   );
 }
 
+// Stages where the conversation is moving — all share the yellow state.
+const IN_PROGRESS = new Set<ContactStatus>([
+  "followed_up",
+  "in_conversation",
+  "interview",
+]);
+
 // Status on the card, since the board groups by approach, not status.
-// Owner spec: rejected & ghosted wear the red soft chip; to-contact and
-// won wear the teal one; everything in between stays quiet.
+// Hues: blue to contact, yellow in progress, pink replied, teal won,
+// red rejected/ghosted; only "contacted" stays neutral.
 export function StatusBadge({ status }: { status: ContactStatus }) {
   if (status === "rejected" || status === "ghosted") {
     return (
@@ -60,7 +67,7 @@ export function StatusBadge({ status }: { status: ContactStatus }) {
     );
   }
   // In progress (node 47133:853): yellow soft chip.
-  if (status === "followed_up" || status === "in_conversation") {
+  if (IN_PROGRESS.has(status)) {
     return (
       <Badge variant="warning" appearance="soft">
         {STATUS_LABELS[status]}
@@ -84,8 +91,7 @@ export function cardTone(status: ContactStatus): string | undefined {
   if (status === "rejected" || status === "ghosted") return "glass-danger";
   if (status === "to_contact") return "glass-info";
   if (status === "won") return "glass-success";
-  if (status === "followed_up" || status === "in_conversation")
-    return "glass-warning";
+  if (IN_PROGRESS.has(status)) return "glass-warning";
   if (status === "replied") return "glass-pink";
   return undefined;
 }

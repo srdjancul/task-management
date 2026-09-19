@@ -466,7 +466,7 @@ function BoardGroup({
       {/* 16px between the headline and its group (owner spec). */}
       <header className="flex items-center gap-2">
         <h2 className="text-lg font-medium">{group.title}</h2>
-        <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary">
+        <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary backdrop-blur-xs">
           {group.cards.length}
         </span>
       </header>

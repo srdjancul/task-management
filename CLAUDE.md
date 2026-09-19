@@ -32,7 +32,8 @@ Everything sits behind login; there is exactly one user.
   - Adjacent controls MUST be exactly the same height — a button next to
     an input is h-10, next to a badge h-8, etc. Never eyeball it.
   - A card's tint always matches its badge hue: blue = to contact,
-    yellow = in progress (followed up / in conversation), pink = replied,
+    yellow = in progress (followed up / in conversation / interview),
+    pink = replied,
     teal = won,
     red = rejected & ghosted, grey glass = everything else.
   - "applied" = green badge; primary actions are white with black ink.
