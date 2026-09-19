@@ -67,6 +67,13 @@ npm run db:push    # apply migrations (needs SUPABASE_* vars in .env.local)
 npm run db:types   # regenerate database.types.ts after schema changes
 ```
 
+## Personal material
+
+The owner's job-search material (CV, LinkedIn export, bio, message
+drafts, application notes) lives ONLY in `private/`, which is git-ignored.
+The GitHub repo is public: never write personal data anywhere else in
+the project, and never commit or `git add -f` anything under `private/`.
+
 ## Workflow
 
 - Migrations are files in `supabase/migrations/`, applied with `db:push`;

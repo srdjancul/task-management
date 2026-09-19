@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Keep the env template tracked
 !.env.example
+
+# Personal job-search material (CV, LinkedIn export, drafts) — never committed
+/private/
