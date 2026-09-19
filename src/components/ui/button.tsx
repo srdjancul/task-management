@@ -31,6 +31,12 @@ const buttonVariants = cva(
           "hover:bg-neutral-secondary hover:text-neutral-primary",
           "active:bg-neutral-secondary-pressed",
         ],
+        // Completed state (e.g. "Done"): cyan soft — 10% fill + stroke.
+        success: [
+          "border-success-soft bg-success-soft text-success",
+          "hover:bg-brand-secondary",
+          "active:bg-brand-secondary-hovered",
+        ],
         danger: [
           "bg-danger text-neutral-primary",
           "hover:bg-danger-hovered active:bg-danger-pressed",

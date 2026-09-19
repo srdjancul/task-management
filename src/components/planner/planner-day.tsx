@@ -369,8 +369,14 @@ export function PlannerDay({
                     Start
                   </Button>
                 )}
+                {/* Owner spec: done is cyan soft — also on hover before
+                    it's done, as a preview of the completed state. */}
                 <Button
-                  variant={isDone ? "secondary" : "ghost"}
+                  variant={isDone ? "success" : "ghost"}
+                  className={cn(
+                    !isDone &&
+                      "hover:border-success-soft hover:bg-success-soft hover:text-success active:bg-success-soft",
+                  )}
                   onClick={() => handleDoneToggle(block)}
                 >
                   <Check />
