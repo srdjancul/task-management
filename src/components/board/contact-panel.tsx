@@ -282,11 +282,14 @@ export function ContactPanel({
                   <Button
                     type="button"
                     variant="ghost"
+                    size="sm"
                     onClick={() => setEditing(false)}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">Save</Button>
+                  <Button type="submit" size="sm">
+                    Save
+                  </Button>
                 </div>
               </form>
             ) : (
@@ -308,7 +311,8 @@ export function ContactPanel({
                       onValueChange={(v) =>
                         handleStatusChange(v as ContactStatus)
                       }
-                      className="w-auto"
+                      // Same height as the badge beside it.
+                      className="h-8 w-auto"
                       options={CONTACT_STATUSES.map((s) => ({
                         value: s,
                         label: STATUS_LABELS[s],
@@ -393,7 +397,7 @@ export function ContactPanel({
                 aria-label="When"
               />
               <Input name="note" placeholder="Note (optional)" />
-              <Button type="submit" className="self-end">
+              <Button type="submit" size="sm" className="self-end">
                 Log touch
               </Button>
             </form>

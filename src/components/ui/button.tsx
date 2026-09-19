@@ -50,12 +50,13 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
+      // Owner spec: secondary buttons keep their white/10 stroke on hover.
       {
         variant: "secondary",
         appearance: "filled",
         className: [
           "border-neutral-secondary bg-neutral-secondary",
-          "hover:border-transparent hover:bg-neutral-secondary-hovered",
+          "hover:bg-neutral-secondary-hovered",
           "active:bg-neutral-secondary-pressed",
           "disabled:bg-neutral-tertiary",
         ],
@@ -64,7 +65,7 @@ const buttonVariants = cva(
         variant: "secondary",
         appearance: "outline",
         className: [
-          "border-neutral-primary bg-transparent",
+          "border-neutral-secondary bg-transparent",
           "hover:bg-neutral-secondary",
           "active:bg-neutral-secondary-pressed",
           "disabled:bg-transparent disabled:border-neutral-primary-disabled",

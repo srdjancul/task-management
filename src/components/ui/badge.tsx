@@ -12,7 +12,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         primary: "bg-neutral-inverse text-neutral-inverse",
-        secondary: "bg-neutral-secondary text-neutral-primary",
+        // Owner spec: uncolored badges carry a white/10 stroke.
+        secondary:
+          "border-neutral-secondary bg-neutral-secondary text-neutral-primary",
         destructive: "bg-danger text-neutral-primary",
         success: "bg-success text-neutral-inverse",
         info: "bg-info text-neutral-primary",
