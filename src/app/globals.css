@@ -340,38 +340,17 @@
 
   /*
    * Fixed full-viewport background: the exact Figma render (node
-   * 47137:928, exported to /bg-beams.webp — 7 KB): near-black with a
-   * violet light ray from the top-right corner. The layer is oversized
-   * and drifts slowly (transform/opacity only, compositor-cheap) so the
-   * app feels alive; the global prefers-reduced-motion rule freezes it.
+   * 47137:928) exported near-lossless to /bg-beams.webp at its native
+   * resolution — violet light ray plus particle grain, static, anchored
+   * to the top-right corner on every aspect ratio.
    */
   .app-beams {
     position: fixed;
     inset: 0;
     z-index: -10;
-    overflow: hidden;
     pointer-events: none;
-    background-color: var(--black-900);
-  }
-
-  .app-beams::before {
-    content: "";
-    position: absolute;
-    inset: -6%;
-    background: url("/bg-beams.webp") center / cover no-repeat;
-    will-change: transform, opacity;
-    animation: beam-drift 40s ease-in-out infinite alternate;
-  }
-}
-
-@keyframes beam-drift {
-  from {
-    transform: translate3d(-4%, -2%, 0) scale(1);
-    opacity: 0.75;
-  }
-  to {
-    transform: translate3d(4%, 3%, 0) scale(1.1);
-    opacity: 1;
+    background: var(--black-900) url("/bg-beams.webp") right top / cover
+      no-repeat;
   }
 }
 
