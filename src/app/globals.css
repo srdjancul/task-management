@@ -278,6 +278,9 @@
   .glass-input {
     background: linear-gradient(180deg, transparent, var(--white-a10));
     border: 1px solid var(--white-a10);
+    /* Owner spec: 10px backdrop blur so the grain behind stays quiet. */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
 
   /*
@@ -339,18 +342,47 @@
   }
 
   /*
-   * Fixed full-viewport background: the exact Figma render (node
-   * 47137:928) exported near-lossless to /bg-beams.webp at its native
-   * resolution — violet light ray plus particle grain, static, anchored
-   * to the top-right corner on every aspect ratio.
+   * Fixed full-viewport background. The owner-exported grain texture
+   * (/bg-ground.webp) is the ground; the violet light from the
+   * top-right corner is drawn OVER it as CSS gradients, so it renders
+   * at the device's native resolution — no banding or upscaling blur
+   * at any screen size. Layer order: core bloom, wide halo, diagonal
+   * wash, texture.
    */
   .app-beams {
     position: fixed;
     inset: 0;
     z-index: -10;
     pointer-events: none;
-    background: var(--black-900) url("/bg-beams.webp") right top / cover
-      no-repeat;
+    background-color: var(--black-900);
+    background-image:
+      radial-gradient(
+        30% 38% at 93% -4%,
+        color-mix(in srgb, var(--purple-500) 26%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        55% 60% at 80% 12%,
+        color-mix(in srgb, var(--purple-500) 12%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(
+        225deg,
+        color-mix(in srgb, var(--purple-500) 9%, transparent),
+        transparent 50%
+      ),
+      url("/bg-ground.webp");
+    background-size:
+      auto,
+      auto,
+      auto,
+      cover;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      right top;
+    background-repeat: no-repeat;
   }
 }
 
