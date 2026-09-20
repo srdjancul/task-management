@@ -23,7 +23,6 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
   {
     title: "Contact panel",
     rows: [
-      ["M", "Draft an outreach message"],
       ["T", "Jump to the log-touch form"],
       ["Esc", "Close"],
     ],

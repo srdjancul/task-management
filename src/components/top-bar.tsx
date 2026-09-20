@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { ProfileDialog } from "@/components/profile-dialog";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/login/actions";
@@ -35,7 +34,6 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
         ))}
       </nav>
       <div className="flex items-center gap-1">
-        <ProfileDialog />
         <ShortcutsDialog />
         <form action={signOut}>
           <Button type="submit" variant="secondary" appearance="outline" size="sm">

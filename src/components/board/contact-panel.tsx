@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Copy, Pencil, Sparkles, X } from "lucide-react";
+import { Pencil, X } from "lucide-react";
 import { Dialog } from "radix-ui";
 
 import {
@@ -22,7 +22,6 @@ import {
   placeContact,
   updateContact,
 } from "@/lib/actions/contacts";
-import { draftOutreach } from "@/lib/actions/draft";
 import { createTouch, deleteTouch } from "@/lib/actions/touches";
 import {
   CONTACT_STATUSES,
@@ -102,9 +101,6 @@ export function ContactPanel({
   onDeleted: (id: string) => void;
 }) {
   const [touches, setTouches] = React.useState<ContactTouch[] | null>(null);
-  const [drafts, setDrafts] = React.useState<string[]>([]);
-  const [drafting, setDrafting] = React.useState(false);
-  const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
   const [editing, setEditing] = React.useState(false);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -226,30 +222,6 @@ export function ContactPanel({
     });
   }
 
-  // Two Claude-written variants, from the profile + this contact's
-  // history. Generation genuinely takes a few seconds — show progress.
-  async function handleDraft() {
-    if (drafting) return;
-    setDrafting(true);
-    setError(null);
-    const { drafts: result, error: draftError } = await draftOutreach(
-      contact.id,
-    );
-    setDrafting(false);
-    if (draftError) setError(draftError);
-    else setDrafts(result);
-  }
-
-  async function handleCopy(text: string, index: number) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 1500);
-    } catch {
-      setError("Could not copy — select the text manually.");
-    }
-  }
-
   function handleStatusChange(status: ContactStatus) {
     const previous = contact.status;
     setError(null);
@@ -290,13 +262,9 @@ export function ContactPanel({
             const target = event.target as HTMLElement;
             if (target.closest("input, select, textarea, [contenteditable]"))
               return;
-            if (event.key === "t" || event.key === "T") {
-              event.preventDefault();
-              channelRef.current?.focus();
-            } else if (event.key === "m" || event.key === "M") {
-              event.preventDefault();
-              void handleDraft();
-            }
+            if (event.key !== "t" && event.key !== "T") return;
+            event.preventDefault();
+            channelRef.current?.focus();
           }}
           className="glass fixed inset-y-0 right-0 flex w-full max-w-panel flex-col data-[state=open]:animate-in data-[state=open]:slide-in-from-right"
         >
@@ -385,34 +353,6 @@ export function ContactPanel({
             {contact.company_note && !editing && (
               <p className="text-neutral-secondary">{contact.company_note}</p>
             )}
-
-            {/* Claude-drafted outreach — press M. */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Button size="sm" onClick={handleDraft} disabled={drafting}>
-                  <Sparkles />
-                  {drafting ? "Writing…" : "Draft message"}
-                </Button>
-                <span className="text-neutral-tertiary max-sm:hidden">M</span>
-              </div>
-              {drafts.map((draft, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col gap-2 rounded-lg border border-neutral-secondary p-3"
-                >
-                  <p className="text-sm whitespace-pre-wrap">{draft}</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="self-end"
-                    onClick={() => handleCopy(draft, index)}
-                  >
-                    {copiedIndex === index ? <Check /> : <Copy />}
-                    {copiedIndex === index ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              ))}
-            </div>
 
             {/* Log touch — press T to jump here. */}
             <form
