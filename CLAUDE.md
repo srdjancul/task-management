@@ -82,3 +82,12 @@ the project, and never commit or `git add -f` anything under `private/`.
   other projects.
 - Never commit `.env.local`. Push to `main` only when the owner says so;
   Vercel deploys `main` automatically.
+
+## Dev server gotcha
+
+`next dev` and `next build` share `.next`. Running a production build
+while the dev server is up leaves the dev server serving stale server
+chunks — the symptom is a React hydration mismatch on markup that
+looks correct in source. Stop the dev server (or accept a restart)
+before `npm run build` / `npm run verify`, and clear `.next` if a
+mismatch appears.
