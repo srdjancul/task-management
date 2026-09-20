@@ -62,6 +62,27 @@ export type Database = {
         }
         Relationships: []
       }
+      settings: {
+        Row: {
+          key: string
+          updated_at: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          user_id?: string
+          value?: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           block_id: string | null
