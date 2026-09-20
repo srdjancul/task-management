@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
@@ -16,6 +17,14 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
       {/* Owner spec: 12px vertical padding on the navbar. */}
       <div className="mx-auto flex w-full max-w-page items-center justify-between px-4 py-3 sm:px-8">
       <nav className="flex items-center gap-4">
+        <Image
+          src="/logo.png"
+          alt="Task Management"
+          width={230}
+          height={230}
+          priority
+          className="size-6 shrink-0"
+        />
         {tabs.map((tab) => (
           <Link
             key={tab.key}
