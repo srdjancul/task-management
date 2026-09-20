@@ -12,7 +12,7 @@ export default async function OutreachPage() {
   const { data, error } = await supabase
     .from("contacts_with_activity")
     .select(
-      "id, first_name, last_name, position, company, company_note, approach, status, board_rank, source_url, created_at, touch_count, last_touch_at",
+      "id, first_name, last_name, position, company, company_note, approach, niche, status, board_rank, source_url, created_at, touch_count, last_touch_at",
     );
 
   return (

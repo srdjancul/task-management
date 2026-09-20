@@ -223,6 +223,8 @@
   --spacing-16: 64px;
   /* Info-dot size (owner spec, node 47047:10656): 6px cyan marker. */
   --spacing-dot: 6px;
+  /* Navbar wordmark height (owner spec 2026-09-21): 18px. */
+  --spacing-logo: 18px;
 
   /* ------------------------------------------------------------------------
    * Layout widths — app-level. Page container: 1440px, 32px gutters

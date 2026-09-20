@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -15,7 +16,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Plus, Search, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 
 import {
   cardTone,
@@ -27,18 +28,22 @@ import { QuickAddDialog } from "@/components/board/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createContact, placeContact } from "@/lib/actions/contacts";
-import type {
-  BoardContact,
-  ContactFields,
+import {
+  NICHE_LABELS,
+  NICHES,
+  type BoardContact,
+  type ContactFields,
+  type ContactNiche,
 } from "@/lib/contact-constants";
 import { cn } from "@/lib/utils";
 
 /*
- * The board groups contacts under headlines (owner spec, 2026-09-19):
- * "Direct contact" and "Applied" hold the live pipeline by approach;
- * "Rejected & Ghosted" collects dead contacts from either approach.
- * Status lives on the card and in the panel; dragging between groups
- * changes approach (live groups) or buries/revives the contact.
+ * Views (owner spec, 2026-09-21):
+ * - Home ("All"): every group as a one-row preview (5 cards) with a
+ *   "View all" link; drag and drop lives here.
+ * - Group view (?g=direct|applied|closed): the full group, paginated
+ *   (6 rows -> 30 cards per page), filterable by company niche tabs.
+ *   No dragging — the list is filtered/paginated, ranks would lie.
  */
 const GROUPS = [
   { key: "direct", title: "Direct contact" },
@@ -48,6 +53,9 @@ const GROUPS = [
 
 type GroupKey = (typeof GROUPS)[number]["key"];
 type Group = { key: GroupKey; title: string; cards: BoardContact[] };
+
+const HOME_PREVIEW = 5; // one row at full width
+const PAGE_SIZE = 30; // six rows at full width
 
 function groupOf(contact: BoardContact): GroupKey {
   if (contact.status === "rejected" || contact.status === "ghosted")
@@ -82,7 +90,26 @@ const collisionDetection: CollisionDetection = (args) => {
   return rectIntersection(args);
 };
 
+// Page numbers with an ellipsis window: 1 … 4 5 6 … 12
+function pageWindow(current: number, total: number): (number | "…")[] {
+  if (total <= 7)
+    return Array.from({ length: total }, (_, index) => index + 1);
+  const middle = [current - 1, current, current + 1].filter(
+    (p) => p > 1 && p < total,
+  );
+  const out: (number | "…")[] = [1];
+  if (middle[0] !== undefined && middle[0] > 2) out.push("…");
+  out.push(...middle);
+  if (middle.length && middle[middle.length - 1] < total - 1) out.push("…");
+  out.push(total);
+  return out;
+}
+
 export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [contacts, setContacts] = React.useState(initial);
   const [query, setQuery] = React.useState("");
   const [dragged, setDragged] = React.useState<BoardContact | null>(null);
@@ -94,6 +121,31 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   // A click fires right after a drop; ignore it so drags don't open panels.
   const suppressClickRef = React.useRef(false);
   const [, startTransition] = React.useTransition();
+
+  // --- View state lives in the URL: back button and refresh both work. ---
+  const groupParam = searchParams.get("g");
+  const activeGroup =
+    GROUPS.find((g) => g.key === groupParam)?.key ?? null; // null = home
+  const nicheParam = searchParams.get("n") as ContactNiche | null;
+  const activeNiche =
+    nicheParam && NICHES.includes(nicheParam) ? nicheParam : null;
+  const pageParam = Number.parseInt(searchParams.get("p") ?? "1", 10);
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+
+  function setView(next: {
+    g?: GroupKey | null;
+    n?: ContactNiche | null;
+    p?: number;
+  }) {
+    const g = next.g === undefined ? activeGroup : next.g;
+    const n = next.n === undefined ? activeNiche : next.n;
+    const p = next.p === undefined ? 1 : next.p;
+    const sp = new URLSearchParams();
+    if (g) sp.set("g", g);
+    if (g && n) sp.set("n", n);
+    if (g && p > 1) sp.set("p", String(p));
+    router.push(sp.size ? `${pathname}?${sp.toString()}` : pathname);
+  }
 
   // Server data changed (navigation, refresh) → adopt it.
   const [prevInitial, setPrevInitial] = React.useState(initial);
@@ -152,14 +204,38 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     ? (contacts.find((c) => c.id === openId) ?? null)
     : null;
 
+  // --- Group-view derivations -------------------------------------------
+  const groupData = activeGroup
+    ? groups.find((g) => g.key === activeGroup)!
+    : null;
+  const nicheCounts = React.useMemo(() => {
+    const counts = new Map<ContactNiche, number>();
+    for (const card of groupData?.cards ?? []) {
+      counts.set(card.niche, (counts.get(card.niche) ?? 0) + 1);
+    }
+    return counts;
+  }, [groupData]);
+  const nicheFiltered = groupData
+    ? activeNiche
+      ? groupData.cards.filter((c) => c.niche === activeNiche)
+      : groupData.cards
+    : [];
+  const pageCount = Math.max(1, Math.ceil(nicheFiltered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageCards = nicheFiltered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
+
   // Mouse: drag after 4px. Touch: press-and-hold to lift, so a plain swipe
   // still scrolls the board.
-  const sensors = useSensors(
+  const dragSensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 8 },
     }),
   );
+  const noSensors = useSensors();
 
   function focusCard(id: string | undefined) {
     if (!id) return;
@@ -186,7 +262,8 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     const next = cards[index]?.board_rank;
     const rank =
       prev == null && next == null
-        ? Date.now() / 1000
+        ? // eslint-disable-next-line react-hooks/purity -- event handler, not render
+          Date.now() / 1000
         : prev == null
           ? next! - 1
           : next == null
@@ -213,13 +290,13 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     });
   }
 
-  // Add a contact at the top of "Direct contact" (or "Applied" per the
-  // form), then focus its card.
+  // Add a contact at the top of its approach group, then focus its card.
   async function handleCreate(fields: ContactFields): Promise<string | null> {
     const targetGroup = fields.approach === "applied" ? "applied" : "direct";
     const ranks = contacts
       .filter((c) => groupOf(c) === targetGroup)
       .map((c) => c.board_rank);
+    // eslint-disable-next-line react-hooks/purity -- event handler, not render
     const rank = ranks.length ? Math.min(...ranks) - 1 : Date.now() / 1000;
 
     const { contact, error } = await createContact(fields, rank);
@@ -266,13 +343,16 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     }
   }
 
-  // ←/→ walk cards in a group, ↑/↓ jump groups; with Ctrl (or Cmd) the
-  // same keys move the card instead.
+  // ←/→ walk cards, ↑/↓ jump groups (home only); with Ctrl the same keys
+  // move the card — also home only, where ranks are truthful.
   function onCardKeyDown(event: React.KeyboardEvent, contact: BoardContact) {
-    const groupIndex = groups.findIndex((g) => g.key === groupOf(contact));
-    const cards = groups[groupIndex].cards;
-    const cardIndex = cards.findIndex((c) => c.id === contact.id);
-    const move = event.ctrlKey || event.metaKey;
+    const inGroupView = activeGroup !== null;
+    const list = inGroupView
+      ? pageCards
+      : groups[GROUPS.findIndex((g) => g.key === groupOf(contact))].cards;
+    const groupIndex = GROUPS.findIndex((g) => g.key === groupOf(contact));
+    const cardIndex = list.findIndex((c) => c.id === contact.id);
+    const move = (event.ctrlKey || event.metaKey) && !inGroupView;
 
     const focusSoon = () =>
       requestAnimationFrame(() => focusCard(contact.id));
@@ -283,34 +363,38 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
         break;
       case "ArrowLeft":
         if (move && cardIndex > 0) {
-          commitPlace(contact, groups[groupIndex].key, cards[cardIndex - 1].id);
+          commitPlace(contact, GROUPS[groupIndex].key, list[cardIndex - 1].id);
           focusSoon();
         } else if (!move) {
-          focusCard(cards[cardIndex - 1]?.id);
+          focusCard(list[cardIndex - 1]?.id);
         }
         break;
       case "ArrowRight":
-        if (move && cardIndex < cards.length - 1) {
+        if (move && cardIndex < list.length - 1) {
           commitPlace(
             contact,
-            groups[groupIndex].key,
-            cards[cardIndex + 2]?.id ?? null,
+            GROUPS[groupIndex].key,
+            list[cardIndex + 2]?.id ?? null,
           );
           focusSoon();
         } else if (!move) {
-          focusCard(cards[cardIndex + 1]?.id);
+          focusCard(list[cardIndex + 1]?.id);
         }
         break;
       case "ArrowUp":
       case "ArrowDown": {
+        if (inGroupView) return;
         const dir = event.key === "ArrowUp" ? -1 : 1;
-        const target = groups[groupIndex + dir];
+        const target = GROUPS[groupIndex + dir];
         if (!target) break;
         if (move) {
           commitPlace(contact, target.key, null);
           focusSoon();
         } else {
-          const neighbor = target.cards;
+          const neighbor = groups[groupIndex + dir].cards.slice(
+            0,
+            HOME_PREVIEW,
+          );
           if (neighbor.length > 0) {
             focusCard(neighbor[Math.min(cardIndex, neighbor.length - 1)].id);
           }
@@ -323,9 +407,18 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     event.preventDefault();
   }
 
+  const cardOpenProps = {
+    onCardKeyDown,
+    onCardOpen: (contact: BoardContact) => {
+      if (suppressClickRef.current) return;
+      setOpenId(contact.id);
+    },
+  };
+
   return (
     <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
+        {/* Toolbar: search + New contact left, view tabs right. */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-search">
             {/* z-10: the input's backdrop blur paints above plain siblings. */}
@@ -365,6 +458,47 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           <span aria-live="polite" className="text-danger">
             {notice}
           </span>
+
+          <div className="ml-auto flex flex-wrap items-center gap-1">
+            {activeGroup === null ? (
+              // Home: group tabs. "All" is the home view itself.
+              <>
+                <Button aria-current="page">All</Button>
+                {GROUPS.map((group) => (
+                  <Button
+                    key={group.key}
+                    variant="ghost"
+                    onClick={() => setView({ g: group.key, n: null, p: 1 })}
+                  >
+                    {group.title}
+                  </Button>
+                ))}
+              </>
+            ) : (
+              // Group view: niche tabs (only niches present in the group).
+              <>
+                <Button
+                  variant={activeNiche === null ? "primary" : "ghost"}
+                  aria-current={activeNiche === null ? "page" : undefined}
+                  onClick={() => setView({ n: null, p: 1 })}
+                >
+                  All
+                </Button>
+                {NICHES.filter((n) => (nicheCounts.get(n) ?? 0) > 0).map(
+                  (n) => (
+                    <Button
+                      key={n}
+                      variant={activeNiche === n ? "primary" : "ghost"}
+                      aria-current={activeNiche === n ? "page" : undefined}
+                      onClick={() => setView({ n, p: 1 })}
+                    >
+                      {NICHE_LABELS[n]}
+                    </Button>
+                  ),
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {contacts.length === 0 && (
@@ -377,34 +511,115 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           </p>
         )}
 
+        {q && visible.length === 0 && contacts.length > 0 && (
+          <p className="text-neutral-secondary">
+            No matches for “{query.trim()}” — check the spelling or clear the
+            search (Esc).
+          </p>
+        )}
+
         <DndContext
           id="outreach-board"
-          sensors={sensors}
+          sensors={activeGroup === null ? dragSensors : noSensors}
           collisionDetection={collisionDetection}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={() => setDragged(null)}
         >
-          {q && visible.length === 0 && contacts.length > 0 && (
-            <p className="text-neutral-secondary">
-              No matches for “{query.trim()}” — check the spelling or clear
-              the search (Esc).
-            </p>
+          {activeGroup === null ? (
+            <div className="flex flex-col gap-8">
+              {groups.map((group) => (
+                <BoardGroup
+                  key={group.key}
+                  group={group}
+                  searching={Boolean(q)}
+                  onViewAll={() => setView({ g: group.key, n: null, p: 1 })}
+                  {...cardOpenProps}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setView({ g: null, n: null, p: 1 })}
+                >
+                  <ArrowLeft />
+                  All contacts
+                </Button>
+                <h2 className="text-lg font-medium">{groupData!.title}</h2>
+                <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary backdrop-blur-xs">
+                  {nicheFiltered.length}
+                </span>
+              </div>
+
+              <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+                {pageCards.map((contact) => (
+                  <ContactCard
+                    key={contact.id}
+                    contact={contact}
+                    onKeyDown={(e) => onCardKeyDown(e, contact)}
+                    onOpen={() => cardOpenProps.onCardOpen(contact)}
+                  />
+                ))}
+              </div>
+
+              {pageCards.length === 0 && (
+                <p className="text-neutral-secondary">
+                  Nothing here{activeNiche ? ` in ${NICHE_LABELS[activeNiche]}` : ""}
+                  {q ? " for this search" : ""}.
+                </p>
+              )}
+
+              {pageCount > 1 && (
+                <nav
+                  aria-label="Pagination"
+                  className="flex items-center justify-center gap-1 pt-2"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Previous page"
+                    disabled={safePage === 1}
+                    onClick={() => setView({ p: safePage - 1 })}
+                  >
+                    <ChevronLeft />
+                  </Button>
+                  {pageWindow(safePage, pageCount).map((p, index) =>
+                    p === "…" ? (
+                      <span
+                        key={`gap-${index}`}
+                        className="px-1 text-neutral-tertiary"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <Button
+                        key={p}
+                        size="sm"
+                        variant={p === safePage ? "primary" : "ghost"}
+                        aria-current={p === safePage ? "page" : undefined}
+                        onClick={() => setView({ p })}
+                      >
+                        {p}
+                      </Button>
+                    ),
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Next page"
+                    disabled={safePage === pageCount}
+                    onClick={() => setView({ p: safePage + 1 })}
+                  >
+                    <ChevronRight />
+                  </Button>
+                </nav>
+              )}
+            </div>
           )}
-          <div className="flex flex-col gap-8">
-            {groups.map((group) => (
-              <BoardGroup
-                key={group.key}
-                group={group}
-                searching={Boolean(q)}
-                onCardKeyDown={onCardKeyDown}
-                onCardOpen={(contact) => {
-                  if (suppressClickRef.current) return;
-                  setOpenId(contact.id);
-                }}
-              />
-            ))}
-          </div>
           <DragOverlay>
             {dragged && (
               <div
@@ -448,11 +663,13 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 function BoardGroup({
   group,
   searching,
+  onViewAll,
   onCardKeyDown,
   onCardOpen,
 }: {
   group: Group;
   searching: boolean;
+  onViewAll: () => void;
   onCardKeyDown: (event: React.KeyboardEvent, contact: BoardContact) => void;
   onCardOpen: (contact: BoardContact) => void;
 }) {
@@ -460,6 +677,8 @@ function BoardGroup({
 
   // While filtering, an empty group is noise — hide it entirely.
   if (searching && group.cards.length === 0) return null;
+
+  const preview = group.cards.slice(0, HOME_PREVIEW);
 
   return (
     <section className="flex flex-col gap-4">
@@ -469,6 +688,16 @@ function BoardGroup({
         <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary backdrop-blur-xs">
           {group.cards.length}
         </span>
+        {group.cards.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto"
+            onClick={onViewAll}
+          >
+            View all →
+          </Button>
+        )}
       </header>
       <div
         ref={setNodeRef}
@@ -477,7 +706,7 @@ function BoardGroup({
           isOver && "bg-neutral-secondary",
         )}
       >
-        {group.cards.map((contact) => (
+        {preview.map((contact) => (
           <ContactCard
             key={contact.id}
             contact={contact}

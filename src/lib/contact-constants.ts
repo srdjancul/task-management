@@ -2,6 +2,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type ContactStatus = Database["public"]["Enums"]["contact_status"];
 export type ContactApproach = Database["public"]["Enums"]["contact_approach"];
+export type ContactNiche = Database["public"]["Enums"]["contact_niche"];
 export type TouchChannel = Database["public"]["Enums"]["touch_channel"];
 export type TouchDirection = Database["public"]["Enums"]["touch_direction"];
 
@@ -36,6 +37,25 @@ export const APPROACHES = [
   "applied",
 ] as const satisfies readonly ContactApproach[];
 
+// Owner spec: at most 6 buckets — 5 named + Other.
+export const NICHES = [
+  "web3",
+  "ai",
+  "saas",
+  "fintech",
+  "design",
+  "other",
+] as const satisfies readonly ContactNiche[];
+
+export const NICHE_LABELS: Record<ContactNiche, string> = {
+  web3: "Web3",
+  ai: "AI",
+  saas: "SaaS",
+  fintech: "Fintech",
+  design: "Design",
+  other: "Other",
+};
+
 export const TOUCH_CHANNELS = [
   "email",
   "linkedin",
@@ -55,6 +75,7 @@ export type ContactFields = {
   company: string;
   company_note: string;
   approach: ContactApproach;
+  niche: ContactNiche;
   source_url: string | null;
 };
 

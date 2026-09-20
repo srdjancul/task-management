@@ -3,6 +3,7 @@
 import {
   APPROACHES,
   CONTACT_STATUSES,
+  NICHES,
   type ContactFields,
   type ContactStatus,
 } from "@/lib/contact-constants";
@@ -16,6 +17,7 @@ type ContactRow = Database["public"]["Tables"]["contacts"]["Row"];
 function invalidFields(fields: ContactFields): string | null {
   if (!fields.first_name.trim()) return "First name is required.";
   if (!APPROACHES.includes(fields.approach)) return "Invalid approach.";
+  if (!NICHES.includes(fields.niche)) return "Invalid niche.";
   return null;
 }
 

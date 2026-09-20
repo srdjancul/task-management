@@ -5,6 +5,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 import { Badge } from "@/components/ui/badge";
 import {
+  NICHE_LABELS,
   STATUS_LABELS,
   type BoardContact,
   type ContactApproach,
@@ -107,7 +108,15 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
       <span className="truncate font-medium">
         {contact.first_name} {contact.last_name}
       </span>
-      <span className="truncate text-neutral-secondary">{meta || "—"}</span>
+      {/* Niche is readable at a glance, without opening the card. */}
+      <span className="flex items-center gap-2">
+        <span className="min-w-0 flex-1 truncate text-neutral-secondary">
+          {meta || "—"}
+        </span>
+        <span className="shrink-0 text-neutral-tertiary">
+          {NICHE_LABELS[contact.niche]}
+        </span>
+      </span>
       <span className="flex items-center gap-2 pt-1">
         <StatusBadge status={contact.status} />
         <span className="text-neutral-tertiary">{contact.touch_count}×</span>

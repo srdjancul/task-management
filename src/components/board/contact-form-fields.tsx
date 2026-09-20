@@ -4,8 +4,11 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   APPROACHES,
+  NICHE_LABELS,
+  NICHES,
   type ContactApproach,
   type ContactFields,
+  type ContactNiche,
 } from "@/lib/contact-constants";
 
 // Shared field set for quick add and the panel's edit form. The parent
@@ -72,15 +75,25 @@ export function ContactFormFields({
           />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={id("source_url")}>Source URL</Label>
-          <Input
-            id={id("source_url")}
-            name="source_url"
-            type="url"
-            placeholder="https://…"
-            defaultValue={defaults?.source_url ?? ""}
+          <Label htmlFor={id("niche")}>Niche</Label>
+          <Select
+            id={id("niche")}
+            name="niche"
+            defaultValue={defaults?.niche ?? "other"}
+            options={NICHES.map((n) => ({ value: n, label: NICHE_LABELS[n] }))}
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("source_url")}>Source URL</Label>
+        <Input
+          id={id("source_url")}
+          name="source_url"
+          type="url"
+          placeholder="https://…"
+          defaultValue={defaults?.source_url ?? ""}
+        />
       </div>
 
       <div className="flex flex-col gap-1">
@@ -99,6 +112,7 @@ export function ContactFormFields({
 export function readContactFields(formData: FormData): ContactFields {
   const text = (key: string) => String(formData.get(key) ?? "").trim();
   const approach = text("approach") as ContactApproach;
+  const niche = text("niche") as ContactNiche;
 
   return {
     first_name: text("first_name"),
@@ -107,6 +121,7 @@ export function readContactFields(formData: FormData): ContactFields {
     company: text("company"),
     company_note: text("company_note"),
     approach: APPROACHES.includes(approach) ? approach : "direct",
+    niche: NICHES.includes(niche) ? niche : "other",
     source_url: text("source_url") || null,
   };
 }

@@ -24,6 +24,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          niche: Database["public"]["Enums"]["contact_niche"]
           position: string
           source_url: string | null
           status: Database["public"]["Enums"]["contact_status"]
@@ -39,6 +40,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name?: string
+          niche?: Database["public"]["Enums"]["contact_niche"]
           position?: string
           source_url?: string | null
           status?: Database["public"]["Enums"]["contact_status"]
@@ -54,6 +56,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          niche?: Database["public"]["Enums"]["contact_niche"]
           position?: string
           source_url?: string | null
           status?: Database["public"]["Enums"]["contact_status"]
@@ -206,6 +209,7 @@ export type Database = {
           id: string | null
           last_name: string | null
           last_touch_at: string | null
+          niche: Database["public"]["Enums"]["contact_niche"] | null
           position: string | null
           source_url: string | null
           status: Database["public"]["Enums"]["contact_status"] | null
@@ -225,6 +229,7 @@ export type Database = {
       block_category: "research" | "client_work" | "internal"
       block_status: "planned" | "in_progress" | "done" | "skipped"
       contact_approach: "applied" | "direct"
+      contact_niche: "web3" | "ai" | "saas" | "fintech" | "design" | "other"
       contact_status:
         | "to_contact"
         | "contacted"
@@ -367,6 +372,7 @@ export const Constants = {
       block_category: ["research", "client_work", "internal"],
       block_status: ["planned", "in_progress", "done", "skipped"],
       contact_approach: ["applied", "direct"],
+      contact_niche: ["web3", "ai", "saas", "fintech", "design", "other"],
       contact_status: [
         "to_contact",
         "contacted",
