@@ -560,7 +560,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
                 </span>
               </div>
 
-              <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+              {/* Keyed by niche + page so tab and pagination clicks
+                  drift the cards in instead of snapping. */}
+              <div
+                key={`${activeNiche ?? "all"}-${safePage}`}
+                className="content-enter grid items-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]"
+              >
                 {pageCards.map((contact) => (
                   <ContactCard
                     key={contact.id}
