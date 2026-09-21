@@ -423,7 +423,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
   return (
     <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 pt-8 pb-6 sm:px-8">
+      <div className="page-enter mx-auto flex w-full max-w-page flex-col gap-8 px-4 pt-8 pb-6 sm:px-8">
         {/* Toolbar: search + New contact left, view tabs right. */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-search">
@@ -465,7 +465,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
             {notice}
           </span>
 
-          <div className="ml-auto flex flex-wrap items-center gap-1">
+          <div className="ml-auto flex flex-wrap items-center gap-hairline">
             {activeGroup === null ? (
               // Home: group tabs. "All" is the home view itself.
               <>

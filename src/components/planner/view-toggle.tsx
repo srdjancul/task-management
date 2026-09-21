@@ -13,7 +13,7 @@ export function PlannerViewToggle({
   active: "day" | "week";
 }) {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-hairline">
       <Link
         href={`/planner?d=${date}`}
         aria-current={active === "day" ? "page" : undefined}

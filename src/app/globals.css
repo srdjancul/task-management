@@ -223,6 +223,9 @@
   --spacing-16: 64px;
   /* Info-dot size (owner spec, node 47047:10656): 6px cyan marker. */
   --spacing-dot: 6px;
+  /* Owner spec 2026-09-21: 2px gaps inside tab clusters and paired
+     action buttons (planner Start / Mark done). */
+  --spacing-hairline: 2px;
   /* Navbar wordmark height (owner spec 2026-09-21): 16px. */
   --spacing-logo: 16px;
 
@@ -252,24 +255,42 @@
    */
 }
 
+/* Animatable gradient strength for glass surfaces (owner spec: hover
+   lifts the gradient ends from 10% to 20%, softly). */
+@property --glass-tint {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 10%;
+}
+
 @layer components {
   /*
    * Glass surface (finance-app card node 46993:5628): the master
-   * gradient — 144deg, 10% -> 1% (at 31%) -> 10% — white/10 border,
-   * 20px backdrop blur. Every tinted variant below repeats the exact
-   * same gradient in its own hue. Border color can be overridden by
-   * border-* utilities (hover, drop-target, running states).
+   * gradient — 144deg, tint% -> 1% (at 31%) -> tint% — white/10 border,
+   * 20px backdrop blur. Tinted variants only swap --glass-hue (and,
+   * where their Figma node says so, the border hue); the gradient is
+   * one formula everywhere. .glass-interactive raises the tint to 20%
+   * on hover with a soft ease.
    */
   .glass {
-    background: linear-gradient(
+    --glass-hue: var(--white-pure);
+    background-image: linear-gradient(
       144deg,
-      var(--white-a10) 0%,
-      color-mix(in srgb, var(--white-pure) 1%, transparent) 31%,
-      var(--white-a10) 100%
+      color-mix(in srgb, var(--glass-hue) var(--glass-tint), transparent) 0%,
+      color-mix(in srgb, var(--glass-hue) 1%, transparent) 31%,
+      color-mix(in srgb, var(--glass-hue) var(--glass-tint), transparent) 100%
     );
     border: 1px solid var(--white-a10);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
+    transition:
+      --glass-tint 250ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 250ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-interactive:hover {
+    --glass-tint: 20%;
   }
 
   /*
@@ -291,55 +312,30 @@
    * danger: rejected & ghosted cards. positive: to-contact & won cards.
    */
   .glass-danger {
-    background-image: linear-gradient(
-      144deg,
-      color-mix(in srgb, var(--red-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--red-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--red-500) 10%, transparent) 100%
-    );
+    --glass-hue: var(--red-500);
   }
 
   /* Card tint always matches its badge hue (owner rule): every tinted
      card uses the same diagonal gradient (10% → 1% → 10%) in its own
      color, with a same-hue 10% border. */
   .glass-info {
-    background-image: linear-gradient(
-      144deg,
-      color-mix(in srgb, var(--blue-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--blue-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--blue-500) 10%, transparent) 100%
-    );
+    --glass-hue: var(--blue-500);
     border-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
   }
 
   .glass-success {
-    background-image: linear-gradient(
-      144deg,
-      color-mix(in srgb, var(--teal-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--teal-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--teal-500) 10%, transparent) 100%
-    );
+    --glass-hue: var(--teal-500);
     border-color: color-mix(in srgb, var(--teal-500) 10%, transparent);
   }
 
   /* Replied cards (node 47135:901): diagonal pink tint, glass border. */
   .glass-pink {
-    background-image: linear-gradient(
-      144deg,
-      color-mix(in srgb, var(--pink-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--pink-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--pink-500) 10%, transparent) 100%
-    );
+    --glass-hue: var(--pink-500);
   }
 
   /* In-progress cards: same diagonal gradient in yellow. */
   .glass-warning {
-    background-image: linear-gradient(
-      144deg,
-      color-mix(in srgb, var(--yellow-500) 10%, transparent) 0%,
-      color-mix(in srgb, var(--yellow-500) 1%, transparent) 31%,
-      color-mix(in srgb, var(--yellow-500) 10%, transparent) 100%
-    );
+    --glass-hue: var(--yellow-500);
     border-color: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   }
 
@@ -388,7 +384,38 @@
   }
 }
 
+/* Owner spec: page content below the top bar drifts in — 24px up,
+   gentle fade, soft ease. Replays on route changes; frozen under
+   prefers-reduced-motion by the global rule below. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer components {
+  .page-enter {
+    animation: page-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
 @layer base {
+  /* Soft interaction feel everywhere: links and buttons ease their
+     color/background/border/opacity changes instead of snapping.
+     Utilities can still override per element. */
+  a,
+  button,
+  [role="button"] {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   html {
     color-scheme: dark;
     background: var(--black-900);

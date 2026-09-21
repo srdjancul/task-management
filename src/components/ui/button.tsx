@@ -76,8 +76,10 @@ const buttonVariants = cva(
       {
         variant: "secondary",
         appearance: "outline",
+        // Owner spec: same surface as inputs — glass-input gradient fill
+        // plus its 10px backdrop blur, with the outline on top.
         className: [
-          "border-neutral-secondary bg-transparent",
+          "glass-input border-neutral-secondary",
           "hover:bg-neutral-secondary",
           "active:bg-neutral-secondary-pressed",
           "disabled:bg-transparent disabled:border-neutral-primary-disabled",

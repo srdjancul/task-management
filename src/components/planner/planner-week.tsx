@@ -88,7 +88,7 @@ export function PlannerWeek({
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-4 pt-8 pb-6 sm:px-8">
+      <div className="page-enter mx-auto flex w-full max-w-page flex-col gap-6 px-4 pt-8 pb-6 sm:px-8">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"

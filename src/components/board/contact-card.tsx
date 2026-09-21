@@ -172,10 +172,11 @@ export function ContactCard({
       onKeyDown={onKeyDown}
       onClick={onOpen}
       className={cn(
-        "glass flex w-full shrink-0 touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
+        "glass glass-interactive flex w-full shrink-0 touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
         draggable && "cursor-grab",
         cardTone(contact.status),
-        "outline-none transition-colors hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+        // .glass owns the transition (soft tint + border ease).
+        "outline-none hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         drag.isDragging && "opacity-50",
         drop.isOver && !drag.isDragging && "border-brand",
       )}

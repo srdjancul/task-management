@@ -33,7 +33,7 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
           />
         </Link>
 
-        <nav className="flex items-center gap-4 justify-self-center">
+        <nav className="flex items-center gap-hairline justify-self-center">
           {tabs.map((tab) => (
             <Link
               key={tab.key}
