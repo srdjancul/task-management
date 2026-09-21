@@ -62,7 +62,8 @@ export function ShortcutsDialog() {
       <Dialog.Trigger asChild>
         {/* Hidden on touch-sized screens — shortcuts need a keyboard. */}
         <Button
-          variant="ghost"
+          variant="secondary"
+          appearance="outline"
           size="icon"
           aria-label="Keyboard shortcuts"
           className="max-sm:hidden"

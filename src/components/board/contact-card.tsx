@@ -175,8 +175,8 @@ export function ContactCard({
         "glass glass-interactive flex w-full shrink-0 touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
         draggable && "cursor-grab",
         cardTone(contact.status),
-        // .glass owns the transition (soft tint + border ease).
-        "outline-none hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+        // .glass owns border color AND its hover (hue stroke 10% -> 20%).
+        "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         drag.isDragging && "opacity-50",
         drop.isOver && !drag.isDragging && "border-brand",
       )}

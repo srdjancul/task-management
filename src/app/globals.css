@@ -263,6 +263,12 @@
   initial-value: 10%;
 }
 
+@property --glass-stroke {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 10%;
+}
+
 @layer components {
   /*
    * Glass surface (finance-app card node 46993:5628): the master
@@ -280,17 +286,21 @@
       color-mix(in srgb, var(--glass-hue) 1%, transparent) 31%,
       color-mix(in srgb, var(--glass-hue) var(--glass-tint), transparent) 100%
     );
-    border: 1px solid var(--white-a10);
+    /* Stroke matches the card hue (owner spec): 10% rest, 20% hover. */
+    border: 1px solid
+      color-mix(in srgb, var(--glass-hue) var(--glass-stroke), transparent);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     transition:
       --glass-tint 250ms cubic-bezier(0.22, 1, 0.36, 1),
+      --glass-stroke 250ms cubic-bezier(0.22, 1, 0.36, 1),
       border-color 250ms cubic-bezier(0.22, 1, 0.36, 1),
       color 200ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .glass-interactive:hover {
     --glass-tint: 20%;
+    --glass-stroke: 20%;
   }
 
   /*
@@ -320,12 +330,10 @@
      color, with a same-hue 10% border. */
   .glass-info {
     --glass-hue: var(--blue-500);
-    border-color: color-mix(in srgb, var(--blue-500) 10%, transparent);
   }
 
   .glass-success {
     --glass-hue: var(--teal-500);
-    border-color: color-mix(in srgb, var(--teal-500) 10%, transparent);
   }
 
   /* Replied cards (node 47135:901): diagonal pink tint, glass border. */
@@ -336,7 +344,6 @@
   /* In-progress cards: same diagonal gradient in yellow. */
   .glass-warning {
     --glass-hue: var(--yellow-500);
-    border-color: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   }
 
   /*

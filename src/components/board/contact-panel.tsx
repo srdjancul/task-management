@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Pencil, X } from "lucide-react";
+import { ArrowUpRight, Pencil, X } from "lucide-react";
 import { Dialog } from "radix-ui";
 
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/board/contact-form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DateTimeField } from "@/components/ui/datetime-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -320,14 +321,17 @@ export function ContactPanel({
                       }))}
                     />
                     {sourceHref && (
-                      <a
-                        href={sourceHref}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand-primary hover:underline"
+                      <Button
+                        asChild
+                        variant="tab"
+                        size="sm"
+                        className="ml-auto"
                       >
-                        Profile ↗
-                      </a>
+                        <a href={sourceHref} target="_blank" rel="noreferrer">
+                          Profile
+                          <ArrowUpRight />
+                        </a>
+                      </Button>
                     )}
                     <LastTouch contact={contact} />
                   </div>
@@ -355,15 +359,18 @@ export function ContactPanel({
             )}
 
             {/* Log touch — press T to jump here. */}
+            {/* Owner spec: 16px title, 12px box padding, 12px between the
+                three groups (title / fields / button). */}
             <form
               onSubmit={handleLogTouch}
-              className="flex flex-col gap-2 rounded-base border border-neutral-secondary p-3"
+              className="flex flex-col gap-3 rounded-base border border-neutral-secondary p-3"
             >
               <div className="flex items-baseline justify-between">
-                <span className="font-medium">Log touch</span>
+                <span className="text-base font-medium">Log touch</span>
                 {/* Keyboard hint — pointless on touch. */}
                 <span className="text-neutral-tertiary max-sm:hidden">T</span>
               </div>
+              <div className="flex flex-col gap-2">
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="touch-channel">Channel</Label>
@@ -391,14 +398,13 @@ export function ContactPanel({
                   />
                 </div>
               </div>
-              <Input
+              <DateTimeField
                 name="happened_at"
-                type="datetime-local"
                 defaultValue={localDateTimeNow()}
-                required
                 aria-label="When"
               />
               <Input name="note" placeholder="Note (optional)" />
+              </div>
               <Button type="submit" size="sm" className="self-end">
                 Log touch
               </Button>
