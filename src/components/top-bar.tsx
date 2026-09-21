@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LogOut } from "lucide-react";
 
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function TopBar({ active }: { active: (typeof tabs)[number]["key"] }) {
               appearance="outline"
               size="sm"
             >
+              <LogOut />
               Sign out
             </Button>
           </form>

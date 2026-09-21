@@ -25,6 +25,12 @@ const buttonVariants = cva(
           "disabled:bg-brand-primary-disabled disabled:text-neutral-primary-disabled",
         ],
         secondary: "text-neutral-primary",
+        // Tabs and text links (owner rule): hover changes ONLY the text
+        // color to full strength — never a background.
+        tab: [
+          "bg-transparent text-neutral-secondary",
+          "hover:text-neutral-primary active:text-neutral-primary",
+        ],
         // App-level: quiet chrome buttons (panel close, edit, row actions).
         ghost: [
           "bg-transparent text-neutral-secondary",

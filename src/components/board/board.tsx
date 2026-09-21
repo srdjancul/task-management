@@ -16,7 +16,14 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 
 import {
   cardTone,
@@ -229,13 +236,12 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
   // Mouse: drag after 4px. Touch: press-and-hold to lift, so a plain swipe
   // still scrolls the board.
-  const dragSensors = useSensors(
+  const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 8 },
     }),
   );
-  const noSensors = useSensors();
 
   function focusCard(id: string | undefined) {
     if (!id) return;
@@ -417,7 +423,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
   return (
     <div ref={boardRef} className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 py-6 sm:px-8">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-4 pt-8 pb-6 sm:px-8">
         {/* Toolbar: search + New contact left, view tabs right. */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-search">
@@ -467,7 +473,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
                 {GROUPS.map((group) => (
                   <Button
                     key={group.key}
-                    variant="ghost"
+                    variant="tab"
                     onClick={() => setView({ g: group.key, n: null, p: 1 })}
                   >
                     {group.title}
@@ -476,27 +482,19 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
               </>
             ) : (
               // Group view: niche tabs (only niches present in the group).
-              <>
+              // Niche tabs toggle: clicking the active one clears the filter.
+              NICHES.filter((n) => (nicheCounts.get(n) ?? 0) > 0).map((n) => (
                 <Button
-                  variant={activeNiche === null ? "primary" : "ghost"}
-                  aria-current={activeNiche === null ? "page" : undefined}
-                  onClick={() => setView({ n: null, p: 1 })}
+                  key={n}
+                  variant={activeNiche === n ? "primary" : "tab"}
+                  aria-current={activeNiche === n ? "page" : undefined}
+                  onClick={() =>
+                    setView({ n: activeNiche === n ? null : n, p: 1 })
+                  }
                 >
-                  All
+                  {NICHE_LABELS[n]}
                 </Button>
-                {NICHES.filter((n) => (nicheCounts.get(n) ?? 0) > 0).map(
-                  (n) => (
-                    <Button
-                      key={n}
-                      variant={activeNiche === n ? "primary" : "ghost"}
-                      aria-current={activeNiche === n ? "page" : undefined}
-                      onClick={() => setView({ n, p: 1 })}
-                    >
-                      {NICHE_LABELS[n]}
-                    </Button>
-                  ),
-                )}
-              </>
+              ))
             )}
           </div>
         </div>
@@ -520,7 +518,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
 
         <DndContext
           id="outreach-board"
-          sensors={activeGroup === null ? dragSensors : noSensors}
+          sensors={sensors}
           collisionDetection={collisionDetection}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
@@ -541,15 +539,18 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           ) : (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setView({ g: null, n: null, p: 1 })}
-                >
-                  <ArrowLeft />
-                  All contacts
-                </Button>
-                <h2 className="text-lg font-medium">{groupData!.title}</h2>
+                {/* Breadcrumb headline: Home at 60%, current at 100%. */}
+                <h2 className="flex items-center gap-2 text-lg font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setView({ g: null, n: null, p: 1 })}
+                    className="rounded-sm text-neutral-primary opacity-60 outline-none transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  >
+                    Home
+                  </button>
+                  <span aria-hidden className="opacity-60">/</span>
+                  <span>{groupData!.title}</span>
+                </h2>
                 <span className="rounded-base border border-neutral-secondary bg-neutral-soft px-2 py-1 text-sm leading-none text-neutral-secondary backdrop-blur-xs">
                   {nicheFiltered.length}
                 </span>
@@ -560,6 +561,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
                   <ContactCard
                     key={contact.id}
                     contact={contact}
+                    draggable={false}
                     onKeyDown={(e) => onCardKeyDown(e, contact)}
                     onOpen={() => cardOpenProps.onCardOpen(contact)}
                   />
@@ -690,12 +692,13 @@ function BoardGroup({
         </span>
         {group.cards.length > 0 && (
           <Button
-            variant="ghost"
+            variant="tab"
             size="sm"
             className="ml-auto"
             onClick={onViewAll}
           >
-            View all →
+            View all
+            <ArrowRight />
           </Button>
         )}
       </header>

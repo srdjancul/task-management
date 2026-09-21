@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-
 import { PlannerDay } from "@/components/planner/planner-day";
 import { PlannerWeek } from "@/components/planner/planner-week";
 import { TopBar } from "@/components/top-bar";
@@ -12,8 +10,6 @@ import {
   type TimeBlock,
 } from "@/lib/planner-constants";
 import { createClient } from "@/lib/supabase/server";
-
-export const metadata: Metadata = { title: "Planner" };
 
 export default async function PlannerPage(props: PageProps<"/planner">) {
   const searchParams = await props.searchParams;

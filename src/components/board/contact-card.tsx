@@ -148,10 +148,13 @@ export function ContactCard({
   contact,
   onKeyDown,
   onOpen,
+  draggable = true,
 }: {
   contact: BoardContact;
   onKeyDown: (event: React.KeyboardEvent) => void;
   onOpen: () => void;
+  // Group views are filtered/paginated — ranks would lie, so no drag.
+  draggable?: boolean;
 }) {
   const drag = useDraggable({ id: `drag:${contact.id}`, data: { contact } });
   const drop = useDroppable({ id: `drop:${contact.id}` });
@@ -164,12 +167,13 @@ export function ContactCard({
       }}
       type="button"
       data-card-id={contact.id}
-      {...drag.attributes}
-      {...drag.listeners}
+      {...(draggable ? drag.attributes : {})}
+      {...(draggable ? drag.listeners : {})}
       onKeyDown={onKeyDown}
       onClick={onOpen}
       className={cn(
-        "glass flex w-full shrink-0 cursor-grab touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
+        "glass flex w-full shrink-0 touch-manipulation flex-col gap-2 rounded-lg p-4 text-left text-sm",
+        draggable && "cursor-grab",
         cardTone(contact.status),
         "outline-none transition-colors hover:border-neutral-primary-hovered focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
         drag.isDragging && "opacity-50",

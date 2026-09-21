@@ -10,10 +10,8 @@ const hanken = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Task Management",
-    template: "%s · Task Management",
-  },
+  // Owner spec: the browser tab always reads "Task Management".
+  title: "Task Management",
   description: "Personal outreach CRM and daily planner.",
   // Private tool — keep it out of search engines.
   robots: { index: false, follow: false },
