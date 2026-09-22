@@ -64,6 +64,18 @@ type Group = { key: GroupKey; title: string; cards: BoardContact[] };
 const HOME_PREVIEW = 5; // one row at full width
 const PAGE_SIZE = 30; // six rows at full width
 
+// Owner spec 2026-09-22: every list reads newest activity first — a
+// contact touched yesterday sits before one touched last month.
+// Contacts with no history fall to the end, ordered by board_rank so
+// dragging still decides their order.
+function byActivity(a: BoardContact, b: BoardContact) {
+  if (a.last_touch_at && b.last_touch_at)
+    return b.last_touch_at.localeCompare(a.last_touch_at);
+  if (a.last_touch_at) return -1;
+  if (b.last_touch_at) return 1;
+  return a.board_rank - b.board_rank;
+}
+
 function groupOf(contact: BoardContact): GroupKey {
   if (contact.status === "rejected" || contact.status === "ghosted")
     return "closed";
@@ -200,9 +212,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     () =>
       GROUPS.map((group) => ({
         ...group,
-        cards: visible
-          .filter((c) => groupOf(c) === group.key)
-          .sort((a, b) => a.board_rank - b.board_rank),
+        cards: visible.filter((c) => groupOf(c) === group.key).sort(byActivity),
       })),
     [visible],
   );
