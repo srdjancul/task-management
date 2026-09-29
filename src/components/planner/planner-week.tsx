@@ -39,8 +39,19 @@ export function PlannerWeek({
 }) {
   const router = useRouter();
   const monday = mondayOf(date);
-  const days = Array.from({ length: 6 }, (_, i) => addDays(monday, i));
+  const days = React.useMemo(
+    () => Array.from({ length: 6 }, (_, i) => addDays(monday, i)),
+    [monday],
+  );
   const today = toISODate(new Date());
+
+  // Warm neighbouring weeks and each day link so navigation is instant.
+  React.useEffect(() => {
+    router.prefetch(`/planner?d=${addDays(date, -7)}&view=week`);
+    router.prefetch(`/planner?d=${addDays(date, 7)}&view=week`);
+    router.prefetch(`/planner?d=${date}`);
+    for (const iso of days) router.prefetch(`/planner?d=${iso}`);
+  }, [router, date, days]);
 
   // Tick while a timer in this week runs, so the week view counts live too.
   const running = blocks.some((b) => b.started_at !== null);

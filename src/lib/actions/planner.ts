@@ -46,6 +46,33 @@ export async function stopBlock(
   return freshBlocks(date);
 }
 
+// Planned hours are per day and per block, so a heavy Tuesday can differ
+// from the default plan without touching the other days.
+export async function setBlockPlannedMinutes(
+  id: string,
+  date: string,
+  plannedMinutes: number,
+): Promise<BlocksResult> {
+  if (
+    !Number.isFinite(plannedMinutes) ||
+    plannedMinutes < 0 ||
+    plannedMinutes > 24 * 60
+  ) {
+    return { blocks: null, error: "Planned hours must be between 0 and 24." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("time_blocks")
+    .update({ planned_minutes: Math.round(plannedMinutes) })
+    .eq("id", id);
+  if (error) {
+    console.error("setBlockPlannedMinutes failed:", error.message);
+    return { blocks: null, error: "Could not save the planned hours." };
+  }
+  return freshBlocks(date);
+}
+
 export async function setBlockDone(
   id: string,
   date: string,

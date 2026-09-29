@@ -151,20 +151,45 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   const pageParam = Number.parseInt(searchParams.get("p") ?? "1", 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
+  const hrefFor = React.useCallback(
+    (next: { g?: GroupKey | null; n?: ContactNiche | null; p?: number }) => {
+      const g = next.g === undefined ? activeGroup : next.g;
+      const n = next.n === undefined ? activeNiche : next.n;
+      const p = next.p === undefined ? 1 : next.p;
+      const sp = new URLSearchParams();
+      if (g) sp.set("g", g);
+      if (g && n) sp.set("n", n);
+      if (g && p > 1) sp.set("p", String(p));
+      return sp.size ? `${pathname}?${sp.toString()}` : pathname;
+    },
+    [activeGroup, activeNiche, pathname],
+  );
+
   function setView(next: {
     g?: GroupKey | null;
     n?: ContactNiche | null;
     p?: number;
   }) {
-    const g = next.g === undefined ? activeGroup : next.g;
-    const n = next.n === undefined ? activeNiche : next.n;
-    const p = next.p === undefined ? 1 : next.p;
-    const sp = new URLSearchParams();
-    if (g) sp.set("g", g);
-    if (g && n) sp.set("n", n);
-    if (g && p > 1) sp.set("p", String(p));
-    router.push(sp.size ? `${pathname}?${sp.toString()}` : pathname);
+    // In a transition the current view stays interactive while the next
+    // one loads, instead of freezing on click.
+    startTransition(() => router.push(hrefFor(next)));
   }
+
+  // Warm the views one click away (group tabs, this group's niches, the
+  // next page) so switching is instant instead of a fresh server trip.
+  React.useEffect(() => {
+    const targets = [
+      hrefFor({ g: null, n: null }),
+      ...GROUPS.map((g) => hrefFor({ g: g.key, n: null })),
+      ...(activeGroup
+        ? [
+            ...NICHES.map((n) => hrefFor({ n })),
+            hrefFor({ p: page + 1 }),
+          ]
+        : []),
+    ];
+    for (const href of new Set(targets)) router.prefetch(href);
+  }, [router, hrefFor, activeGroup, page]);
 
   // Server data changed (navigation, refresh) → adopt it.
   const [prevInitial, setPrevInitial] = React.useState(initial);

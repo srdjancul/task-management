@@ -6,7 +6,7 @@
  *
  * Palette source: Figma "Personal Finance App" (file W6Uf2Q34FoyGmYLDFuvaqO,
  * node 2031:159): near-black ground #0C0D0D, ink #F8F8F8/#9C9C9C, accent
- * teal #13E2C2, blue #4288F6, pink #F472B6, yellow #DEC763, error #FB505F.
+ * neon #CCFF04, blue #4288F6, pink #F472B6, yellow #DEC763, error #FB505F.
  * Card style from node 46993:5557: white-alpha gradient + 20px backdrop
  * blur + white/10 border ("glass", below). Background beams after the
  * Amply purple light effect; purple appears ONLY in the beams.
@@ -44,10 +44,10 @@
   --white-a20: rgba(255, 255, 255, 0.2);
   --white-a30: rgba(255, 255, 255, 0.3);
 
-  --teal-100: #d5f1ed;
-  --teal-500: #13e2c2;
-  --teal-600: #10bfa4;
-  --teal-700: #0d9c87;
+  --neon-100: #f2ffc2;
+  --neon-500: #ccff04;
+  --neon-600: #b8e600;
+  --neon-700: #9fc700;
 
   --blue-100: #d4dff2;
   --blue-500: #4288f6;
@@ -97,17 +97,17 @@
   --background-color-neutral-inverse-hovered: var(--grey-100);
   --background-color-neutral-inverse-pressed: var(--grey-200);
 
-  --background-color-brand-primary: var(--teal-500);
-  --background-color-brand-primary-hovered: var(--teal-600);
-  --background-color-brand-primary-pressed: var(--teal-700);
+  --background-color-brand-primary: var(--neon-500);
+  --background-color-brand-primary-hovered: var(--neon-600);
+  --background-color-brand-primary-pressed: var(--neon-700);
   --background-color-brand-primary-disabled: var(--black-700);
-  --background-color-brand-secondary: color-mix(in srgb, var(--teal-500) 15%, transparent);
-  --background-color-brand-secondary-hovered: color-mix(in srgb, var(--teal-500) 25%, transparent);
+  --background-color-brand-secondary: color-mix(in srgb, var(--neon-500) 15%, transparent);
+  --background-color-brand-secondary-hovered: color-mix(in srgb, var(--neon-500) 25%, transparent);
 
   /* Scrim behind dialogs/panels. */
   --background-color-overlay: rgba(0, 0, 0, 0.6);
 
-  --background-color-success: var(--teal-500);
+  --background-color-success: var(--neon-500);
   --background-color-warning: var(--yellow-500);
   --background-color-danger: var(--red-500);
   --background-color-danger-hovered: var(--red-600);
@@ -118,7 +118,7 @@
   /* Soft tinted chips (finance-app nodes 47094:19677 / 47131:814):
      10% tint fill + 10% tint border + full-strength text. */
   --background-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
-  --background-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
+  --background-color-success-soft: color-mix(in srgb, var(--neon-500) 10%, transparent);
   --background-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
   --background-color-warning-soft: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   --background-color-pink-soft: color-mix(in srgb, var(--pink-500) 10%, transparent);
@@ -127,7 +127,7 @@
 
   /* ------------------------------------------------------------------------
    * Text — text-*
-   * text-neutral-inverse is the dark ink for bright surfaces (teal, yellow,
+   * text-neutral-inverse is the dark ink for bright surfaces (neon, yellow,
    * white).
    * ---------------------------------------------------------------------- */
   --text-color-neutral-primary: var(--white);
@@ -138,10 +138,10 @@
   --text-color-neutral-faint: var(--white-a30);
   --text-color-neutral-inverse: var(--black-pure);
 
-  --text-color-brand-primary: var(--teal-500);
-  --text-color-brand-secondary: var(--teal-100);
+  --text-color-brand-primary: var(--neon-500);
+  --text-color-brand-secondary: var(--neon-100);
 
-  --text-color-success: var(--teal-500);
+  --text-color-success: var(--neon-500);
   --text-color-warning: var(--yellow-500);
   --text-color-danger: var(--red-500);
   --text-color-info: var(--blue-500);
@@ -157,21 +157,21 @@
   --border-color-neutral-secondary: var(--white-a10);
   --border-color-neutral-inverse: var(--white);
 
-  --border-color-brand: var(--teal-500);
-  --border-color-brand-hovered: var(--teal-600);
+  --border-color-brand: var(--neon-500);
+  --border-color-brand-hovered: var(--neon-600);
 
-  --border-color-success: var(--teal-500);
+  --border-color-success: var(--neon-500);
   --border-color-warning: var(--yellow-500);
   --border-color-danger: var(--red-500);
   --border-color-info: var(--blue-500);
   --border-color-danger-soft: color-mix(in srgb, var(--red-500) 10%, transparent);
-  --border-color-success-soft: color-mix(in srgb, var(--teal-500) 10%, transparent);
+  --border-color-success-soft: color-mix(in srgb, var(--neon-500) 10%, transparent);
   --border-color-info-soft: color-mix(in srgb, var(--blue-500) 10%, transparent);
   --border-color-warning-soft: color-mix(in srgb, var(--yellow-500) 10%, transparent);
   --border-color-pink-soft: color-mix(in srgb, var(--pink-500) 10%, transparent);
 
-  --outline-color-brand: var(--teal-500);
-  --ring-color-brand: var(--teal-500);
+  --outline-color-brand: var(--neon-500);
+  --ring-color-brand: var(--neon-500);
 
   /* ------------------------------------------------------------------------
    * Typography — Hanken Grotesk (free HK Grotesk, owner-approved
@@ -341,7 +341,7 @@
   }
 
   .glass-success {
-    --glass-hue: var(--teal-500);
+    --glass-hue: var(--neon-500);
   }
 
   /* Replied cards (node 47135:901): diagonal pink tint, glass border. */
@@ -405,7 +405,7 @@
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -418,7 +418,7 @@
 @keyframes content-enter {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -432,12 +432,15 @@
    cards' backdrop blur then samples past that layer's top edge — a
    light band across the first row of cards on every re-composite. */
 @layer components {
+  /* Owner spec 2026-09-29: keep the motion, lose the wait. Short and
+     snappy (180/140ms, ease-out) reads as responsive; the old 500/400ms
+     rises made every navigation feel delayed. */
   .page-enter {
-    animation: page-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation: page-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 
   .content-enter {
-    animation: content-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation: content-enter 140ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 }
 

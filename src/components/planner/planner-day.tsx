@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Pencil, X } from "lucide-react";
 
 import { PlannerViewToggle } from "@/components/planner/view-toggle";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   createTask,
   deleteTask,
   setBlockDone,
+  setBlockPlannedMinutes,
   setTaskDone,
   startBlock,
   stopBlock,
@@ -139,6 +140,21 @@ export function PlannerDay({
     });
   }
 
+  function handlePlannedMinutes(block: TimeBlock, plannedMinutes: number) {
+    const snapshot = blocks;
+    setBlocks((all) =>
+      all.map((b) =>
+        b.id === block.id ? { ...b, planned_minutes: plannedMinutes } : b,
+      ),
+    );
+    startTransition(async () => {
+      applyBlocksResult(
+        await setBlockPlannedMinutes(block.id, date, plannedMinutes),
+        snapshot,
+      );
+    });
+  }
+
   function handleDoneToggle(block: TimeBlock) {
     const done = block.status !== "done";
     const snapshot = blocks;
@@ -224,12 +240,24 @@ export function PlannerDay({
   // --- Day navigation (Mon–Sat; Sunday is skipped) --------------------------
 
   function goTo(iso: string) {
-    router.push(`/planner?d=${iso}`);
+    // Transition keeps this day interactive while the next one loads.
+    startTransition(() => router.push(`/planner?d=${iso}`));
   }
 
   const monday = mondayOf(date);
-  const week = Array.from({ length: 6 }, (_, i) => addDays(monday, i));
+  // Memoised so the prefetch effect below doesn't re-run every render.
+  const week = React.useMemo(
+    () => Array.from({ length: 6 }, (_, i) => addDays(monday, i)),
+    [monday],
+  );
   const today = toISODate(new Date());
+
+  // Warm every day of this week plus the week view — one click, no wait.
+  React.useEffect(() => {
+    for (const iso of week) router.prefetch(`/planner?d=${iso}`);
+    router.prefetch(`/planner?d=${date}&view=week`);
+    router.prefetch("/");
+  }, [router, date, week]);
 
   const ordered = BLOCK_CATEGORIES.map((c) =>
     blocks.find((b) => b.category === c.key),
@@ -320,11 +348,12 @@ export function PlannerDay({
                 isRunning && "border-brand",
               )}
             >
-              <header className="flex items-baseline justify-between">
+              <header className="flex h-8 items-center justify-between gap-2">
                 <h2 className="font-medium">{category.label}</h2>
-                <span className="text-neutral-tertiary">
-                  {block.planned_minutes / 60}h planned
-                </span>
+                <PlannedHours
+                  block={block}
+                  onSave={(minutes) => handlePlannedMinutes(block, minutes)}
+                />
               </header>
 
               <div className="flex items-center gap-2">
@@ -355,9 +384,10 @@ export function PlannerDay({
                 />
               </div>
 
-              <div className="flex gap-hairline">
+              <div className="flex gap-2">
                 {isRunning ? (
                   <Button
+                    size="sm"
                     variant="secondary"
                     appearance="outline"
                     onClick={() => handleStop(block)}
@@ -365,13 +395,18 @@ export function PlannerDay({
                     Stop
                   </Button>
                 ) : (
-                  <Button onClick={() => handleStart(block)} disabled={isDone}>
+                  <Button
+                    size="sm"
+                    onClick={() => handleStart(block)}
+                    disabled={isDone}
+                  >
                     Start
                   </Button>
                 )}
                 {/* Owner spec: done is cyan soft — also on hover before
                     it's done, as a preview of the completed state. */}
                 <Button
+                  size="sm"
                   variant={isDone ? "success" : "ghost"}
                   className={cn(
                     !isDone &&
@@ -385,6 +420,9 @@ export function PlannerDay({
               </div>
 
               <TaskList
+                // Fills the rest of the card so every "Add task" field
+                // sits on the same line across the three blocks.
+                className="flex-1"
                 tasks={blockTasks}
                 onAdd={(title) => handleAddTask(block.id, title)}
                 onToggle={handleToggleTask}
@@ -410,19 +448,77 @@ export function PlannerDay({
   );
 }
 
+// "2h planned" with a pencil; click either to edit the hours inline.
+// Enter or blur saves, Esc cancels.
+function PlannedHours({
+  block,
+  onSave,
+}: {
+  block: TimeBlock;
+  onSave: (minutes: number) => void;
+}) {
+  const [editing, setEditing] = React.useState(false);
+  const hours = block.planned_minutes / 60;
+
+  function commit(raw: string) {
+    setEditing(false);
+    const value = Number(raw.replace(",", "."));
+    if (!Number.isFinite(value) || value < 0 || value > 24) return;
+    const minutes = Math.round(value * 60);
+    if (minutes !== block.planned_minutes) onSave(minutes);
+  }
+
+  if (editing) {
+    return (
+      <span className="flex items-center gap-1">
+        <Input
+          autoFocus
+          type="number"
+          min={0}
+          max={24}
+          step={0.5}
+          defaultValue={hours}
+          aria-label={`Planned hours for ${block.category}`}
+          className="h-8 w-16 px-2 text-right"
+          onBlur={(e) => commit(e.currentTarget.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(e.currentTarget.value);
+            if (e.key === "Escape") setEditing(false);
+          }}
+        />
+        <span className="text-neutral-tertiary">h</span>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      aria-label={`Edit planned hours (${hours}h)`}
+      className="flex items-center gap-1 rounded-base px-2 py-1 text-neutral-tertiary outline-none transition-colors hover:bg-neutral-secondary hover:text-neutral-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    >
+      {hours}h planned
+      <Pencil className="size-3" />
+    </button>
+  );
+}
+
 function TaskList({
   tasks,
   onAdd,
   onToggle,
   onDelete,
+  className,
 }: {
   tasks: PlannerTask[];
   onAdd: (title: string) => void;
   onToggle: (task: PlannerTask) => void;
   onDelete: (task: PlannerTask) => void;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn("flex flex-col gap-1", className)}>
       <ul className="flex flex-col gap-1">
         {tasks.map((task) => (
           <li key={task.id} className="group flex items-center gap-2">
@@ -468,7 +564,10 @@ function TaskList({
           </li>
         ))}
       </ul>
+      {/* mt-auto pins the field to the bottom of the card; pt-4 keeps at
+          least 16px between it and the last task. */}
       <form
+        className="mt-auto pt-4"
         onSubmit={(event) => {
           event.preventDefault();
           const input = event.currentTarget.elements.namedItem(
