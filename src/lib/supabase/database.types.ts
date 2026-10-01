@@ -25,6 +25,7 @@ export type Database = {
           id: string
           last_name: string
           niche: Database["public"]["Enums"]["contact_niche"]
+          note_at: string | null
           position: string
           source_url: string | null
           status: Database["public"]["Enums"]["contact_status"]
@@ -41,6 +42,7 @@ export type Database = {
           id?: string
           last_name?: string
           niche?: Database["public"]["Enums"]["contact_niche"]
+          note_at?: string | null
           position?: string
           source_url?: string | null
           status?: Database["public"]["Enums"]["contact_status"]
@@ -57,6 +59,7 @@ export type Database = {
           id?: string
           last_name?: string
           niche?: Database["public"]["Enums"]["contact_niche"]
+          note_at?: string | null
           position?: string
           source_url?: string | null
           status?: Database["public"]["Enums"]["contact_status"]
@@ -210,6 +213,7 @@ export type Database = {
           last_name: string | null
           last_touch_at: string | null
           niche: Database["public"]["Enums"]["contact_niche"] | null
+          note_at: string | null
           position: string | null
           source_url: string | null
           status: Database["public"]["Enums"]["contact_status"] | null

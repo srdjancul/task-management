@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import {
   createTask,
   deleteTask,
+  renameTask,
   setBlockDone,
   setBlockPlannedMinutes,
   setTaskDone,
@@ -26,6 +27,7 @@ import {
   type PlannerTask,
   type TimeBlock,
 } from "@/lib/planner-constants";
+import { trackWrite, useWarmRoutes } from "@/lib/route-cache";
 import { cn } from "@/lib/utils";
 
 const dayFormat = new Intl.DateTimeFormat("en-GB", {
@@ -118,7 +120,7 @@ export function PlannerDay({
       }),
     );
     startTransition(async () => {
-      applyBlocksResult(await startBlock(block.id, date), snapshot);
+      applyBlocksResult(await trackWrite(startBlock(block.id, date)), snapshot);
     });
   }
 
@@ -136,7 +138,7 @@ export function PlannerDay({
       ),
     );
     startTransition(async () => {
-      applyBlocksResult(await stopBlock(block.id, date), snapshot);
+      applyBlocksResult(await trackWrite(stopBlock(block.id, date)), snapshot);
     });
   }
 
@@ -149,7 +151,9 @@ export function PlannerDay({
     );
     startTransition(async () => {
       applyBlocksResult(
-        await setBlockPlannedMinutes(block.id, date, plannedMinutes),
+        await trackWrite(
+          setBlockPlannedMinutes(block.id, date, plannedMinutes),
+        ),
         snapshot,
       );
     });
@@ -175,7 +179,7 @@ export function PlannerDay({
       ),
     );
     startTransition(async () => {
-      applyBlocksResult(await setBlockDone(block.id, date, done), snapshot);
+      applyBlocksResult(await trackWrite(setBlockDone(block.id, date, done)), snapshot);
     });
   }
 
@@ -198,7 +202,9 @@ export function PlannerDay({
     const snapshot = tasks;
     setTasks((all) => [...all, temp]);
     startTransition(async () => {
-      const { task, error } = await createTask(date, blockId, trimmed);
+      const { task, error } = await trackWrite(
+        createTask(date, blockId, trimmed),
+      );
       if (error || !task) {
         setTasks(snapshot);
         setNotice(error ?? "Could not add the task.");
@@ -216,7 +222,24 @@ export function PlannerDay({
       all.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t)),
     );
     startTransition(async () => {
-      const { error } = await setTaskDone(task.id, !task.done);
+      const { error } = await trackWrite(setTaskDone(task.id, !task.done));
+      if (error) {
+        setTasks(snapshot);
+        setNotice(error);
+      }
+    });
+  }
+
+  function handleRenameTask(task: PlannerTask, title: string) {
+    const trimmed = title.trim();
+    if (!trimmed || trimmed === task.title) return;
+    if (task.id.startsWith("temp-")) return;
+    const snapshot = tasks;
+    setTasks((all) =>
+      all.map((t) => (t.id === task.id ? { ...t, title: trimmed } : t)),
+    );
+    startTransition(async () => {
+      const { error } = await trackWrite(renameTask(task.id, trimmed));
       if (error) {
         setTasks(snapshot);
         setNotice(error);
@@ -229,7 +252,7 @@ export function PlannerDay({
     const snapshot = tasks;
     setTasks((all) => all.filter((t) => t.id !== task.id));
     startTransition(async () => {
-      const { error } = await deleteTask(task.id);
+      const { error } = await trackWrite(deleteTask(task.id));
       if (error) {
         setTasks(snapshot);
         setNotice(error);
@@ -252,12 +275,13 @@ export function PlannerDay({
   );
   const today = toISODate(new Date());
 
-  // Warm every day of this week plus the week view — one click, no wait.
-  React.useEffect(() => {
-    for (const iso of week) router.prefetch(`/planner?d=${iso}`);
-    router.prefetch(`/planner?d=${date}&view=week`);
-    router.prefetch("/");
-  }, [router, date, week]);
+  // Warm every other day of this week, the week view and the board — one
+  // click, no wait (see route-cache).
+  useWarmRoutes([
+    ...week.filter((iso) => iso !== date).map((iso) => `/planner?d=${iso}`),
+    `/planner?d=${date}&view=week`,
+    "/",
+  ]);
 
   const ordered = BLOCK_CATEGORIES.map((c) =>
     blocks.find((b) => b.category === c.key),
@@ -345,7 +369,7 @@ export function PlannerDay({
               key={block.id}
               className={cn(
                 "glass flex flex-col gap-3 rounded-lg p-4",
-                isRunning && "border-brand",
+                isRunning && "glass-brand border-brand",
               )}
             >
               <header className="flex h-8 items-center justify-between gap-2">
@@ -426,6 +450,7 @@ export function PlannerDay({
                 tasks={blockTasks}
                 onAdd={(title) => handleAddTask(block.id, title)}
                 onToggle={handleToggleTask}
+                onRename={handleRenameTask}
                 onDelete={handleDeleteTask}
               />
             </section>
@@ -440,6 +465,7 @@ export function PlannerDay({
           tasks={tasks.filter((t) => t.block_id === null)}
           onAdd={(title) => handleAddTask(null, title)}
           onToggle={handleToggleTask}
+          onRename={handleRenameTask}
           onDelete={handleDeleteTask}
         />
       </section>
@@ -508,15 +534,19 @@ function TaskList({
   tasks,
   onAdd,
   onToggle,
+  onRename,
   onDelete,
   className,
 }: {
   tasks: PlannerTask[];
   onAdd: (title: string) => void;
   onToggle: (task: PlannerTask) => void;
+  onRename: (task: PlannerTask, title: string) => void;
   onDelete: (task: PlannerTask) => void;
   className?: string;
 }) {
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <ul className="flex flex-col gap-1">
@@ -543,24 +573,48 @@ function TaskList({
                 {task.done && <Check className="size-3" />}
               </span>
             </button>
-            <span
-              className={cn(
-                "min-w-0 flex-1 truncate",
-                task.done && "text-neutral-tertiary line-through",
-              )}
-            >
-              {task.title}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Delete ${task.title}`}
-              // Hover reveal is invisible on touch — always show it there.
-              className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
-              onClick={() => onDelete(task)}
-            >
-              <X />
-            </Button>
+            {editingId === task.id ? (
+              <TaskTitleInput
+                task={task}
+                onDone={(title) => {
+                  setEditingId(null);
+                  if (title !== null) onRename(task, title);
+                }}
+              />
+            ) : (
+              <>
+                <span
+                  // Double-click is the mouse shortcut for the pencil.
+                  onDoubleClick={() => setEditingId(task.id)}
+                  className={cn(
+                    "min-w-0 flex-1 truncate",
+                    task.done && "text-neutral-tertiary line-through",
+                  )}
+                >
+                  {task.title}
+                </span>
+                {/* Edit, then delete (owner spec 2026-10-01). Hover reveal
+                    is invisible on touch — always show them there. */}
+                <span className="flex gap-hairline opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Edit ${task.title}`}
+                    onClick={() => setEditingId(task.id)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Delete ${task.title}`}
+                    onClick={() => onDelete(task)}
+                  >
+                    <X />
+                  </Button>
+                </span>
+              </>
+            )}
           </li>
         ))}
       </ul>
@@ -580,5 +634,43 @@ function TaskList({
         <Input name="title" placeholder="Add task…" aria-label="Add task" />
       </form>
     </div>
+  );
+}
+
+// Inline rename: Enter or blur saves, Esc cancels (same as PlannedHours).
+// h-6 matches the icon buttons it replaces, so the row doesn't jump.
+function TaskTitleInput({
+  task,
+  onDone,
+}: {
+  task: PlannerTask;
+  // The new title, or null when cancelled.
+  onDone: (title: string | null) => void;
+}) {
+  // Esc blurs too; don't let that blur save the cancelled edit.
+  const settled = React.useRef(false);
+  const finish = (title: string | null) => {
+    if (settled.current) return;
+    settled.current = true;
+    onDone(title);
+  };
+
+  return (
+    <Input
+      autoFocus
+      defaultValue={task.title}
+      aria-label={`Rename ${task.title}`}
+      className="h-6 min-w-0 flex-1 px-2"
+      onFocus={(e) => e.currentTarget.select()}
+      onBlur={(e) => finish(e.currentTarget.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") finish(e.currentTarget.value);
+        if (e.key === "Escape") {
+          // Keep Esc from bubbling to dialogs / global handlers.
+          e.stopPropagation();
+          finish(null);
+        }
+      }}
+    />
   );
 }

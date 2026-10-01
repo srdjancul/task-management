@@ -28,6 +28,14 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
     ],
   },
   {
+    title: "Planner tasks",
+    rows: [
+      ["Tab", "Reach a task's edit / delete buttons"],
+      ["Enter", "Save the edited task"],
+      ["Esc", "Cancel the edit"],
+    ],
+  },
+  {
     title: "Anywhere",
     rows: [["?", "This overview"]],
   },

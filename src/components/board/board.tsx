@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -29,12 +29,14 @@ import {
   cardTone,
   ContactCard,
   ContactCardBody,
+  lastActivityMs,
 } from "@/components/board/contact-card";
 import { ContactPanel } from "@/components/board/contact-panel";
 import { QuickAddDialog } from "@/components/board/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createContact, placeContact } from "@/lib/actions/contacts";
+import { trackWrite, useWarmRoutes } from "@/lib/route-cache";
 import {
   NICHE_LABELS,
   NICHES,
@@ -65,15 +67,31 @@ const HOME_PREVIEW = 5; // one row at full width
 const PAGE_SIZE = 30; // six rows at full width
 
 // Owner spec 2026-09-22: every list reads newest activity first — a
-// contact touched yesterday sits before one touched last month.
+// contact touched yesterday sits before one touched last month. Since
+// 2026-10-01 writing the note counts as activity too (lastActivityMs).
 // Contacts with no history fall to the end, ordered by board_rank so
 // dragging still decides their order.
 function byActivity(a: BoardContact, b: BoardContact) {
-  if (a.last_touch_at && b.last_touch_at)
-    return b.last_touch_at.localeCompare(a.last_touch_at);
-  if (a.last_touch_at) return -1;
-  if (b.last_touch_at) return 1;
+  const at = lastActivityMs(a);
+  const bt = lastActivityMs(b);
+  if (at !== null && bt !== null) return bt - at;
+  if (at !== null) return -1;
+  if (bt !== null) return 1;
   return a.board_rank - b.board_rank;
+}
+
+// Owner spec 2026-10-01: search ranks by where the query matches. "You"
+// lists people whose first name starts with "You" first, then last names
+// starting with it, then any other word (company, position) starting with
+// it, then plain substring hits. -1 = no match.
+function matchRank(contact: BoardContact, q: string): number {
+  const first = contact.first_name.toLowerCase();
+  const name = `${first} ${contact.last_name.toLowerCase()}`;
+  if (name.startsWith(q)) return 0;
+  if (contact.last_name.toLowerCase().startsWith(q)) return 1;
+  const all = `${name} ${contact.company} ${contact.position}`.toLowerCase();
+  if (all.split(/\s+/).some((word) => word.startsWith(q))) return 2;
+  return all.includes(q) ? 3 : -1;
 }
 
 function groupOf(contact: BoardContact): GroupKey {
@@ -125,7 +143,6 @@ function pageWindow(current: number, total: number): (number | "…")[] {
 }
 
 export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -170,26 +187,14 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     n?: ContactNiche | null;
     p?: number;
   }) {
-    // In a transition the current view stays interactive while the next
-    // one loads, instead of freezing on click.
-    startTransition(() => router.push(hrefFor(next)));
+    // Every view is the same contact list, filtered here — so switching
+    // only rewrites the URL (back button and refresh still work) and never
+    // waits on the server. Next syncs useSearchParams with pushState.
+    window.history.pushState(null, "", hrefFor(next));
   }
 
-  // Warm the views one click away (group tabs, this group's niches, the
-  // next page) so switching is instant instead of a fresh server trip.
-  React.useEffect(() => {
-    const targets = [
-      hrefFor({ g: null, n: null }),
-      ...GROUPS.map((g) => hrefFor({ g: g.key, n: null })),
-      ...(activeGroup
-        ? [
-            ...NICHES.map((n) => hrefFor({ n })),
-            hrefFor({ p: page + 1 }),
-          ]
-        : []),
-    ];
-    for (const href of new Set(targets)) router.prefetch(href);
-  }, [router, hrefFor, activeGroup, page]);
+  // Warm the planner (the only page one click away) — see route-cache.
+  useWarmRoutes(["/planner"]);
 
   // Server data changed (navigation, refresh) → adopt it.
   const [prevInitial, setPrevInitial] = React.useState(initial);
@@ -225,22 +230,24 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
   }, [notice]);
 
   const q = query.trim().toLowerCase();
-  const visible = q
-    ? contacts.filter((c) =>
-        `${c.first_name} ${c.last_name} ${c.company} ${c.position}`
-          .toLowerCase()
-          .includes(q),
-      )
-    : contacts;
-
-  const groups: Group[] = React.useMemo(
-    () =>
-      GROUPS.map((group) => ({
-        ...group,
-        cards: visible.filter((c) => groupOf(c) === group.key).sort(byActivity),
-      })),
-    [visible],
-  );
+  const groups: Group[] = React.useMemo(() => {
+    // While searching: best match first, newest activity within a rank.
+    const ranks = new Map<string, number>();
+    if (q) {
+      for (const c of contacts) {
+        const rank = matchRank(c, q);
+        if (rank !== -1) ranks.set(c.id, rank);
+      }
+    }
+    const order = (a: BoardContact, b: BoardContact) =>
+      (ranks.get(a.id) ?? 0) - (ranks.get(b.id) ?? 0) || byActivity(a, b);
+    const visible = q ? contacts.filter((c) => ranks.has(c.id)) : contacts;
+    return GROUPS.map((group) => ({
+      ...group,
+      cards: visible.filter((c) => groupOf(c) === group.key).sort(order),
+    }));
+  }, [contacts, q]);
+  const visibleCount = groups.reduce((sum, g) => sum + g.cards.length, 0);
 
   const openContact = openId
     ? (contacts.find((c) => c.id === openId) ?? null)
@@ -319,11 +326,13 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
       ),
     );
     startTransition(async () => {
-      const { error } = await placeContact(contact.id, {
-        ...(change.status ? { status: change.status } : {}),
-        ...(change.approach ? { approach: change.approach } : {}),
-        boardRank: rank,
-      });
+      const { error } = await trackWrite(
+        placeContact(contact.id, {
+          ...(change.status ? { status: change.status } : {}),
+          ...(change.approach ? { approach: change.approach } : {}),
+          boardRank: rank,
+        }),
+      );
       if (error) {
         setContacts(snapshot);
         setNotice(error);
@@ -340,7 +349,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
     // eslint-disable-next-line react-hooks/purity -- event handler, not render
     const rank = ranks.length ? Math.min(...ranks) - 1 : Date.now() / 1000;
 
-    const { contact, error } = await createContact(fields, rank);
+    const { contact, error } = await trackWrite(createContact(fields, rank));
     if (error || !contact) return error ?? "Could not save the contact.";
 
     setContacts((all) => [
@@ -548,7 +557,7 @@ export function Board({ contacts: initial }: { contacts: BoardContact[] }) {
           </p>
         )}
 
-        {q && visible.length === 0 && contacts.length > 0 && (
+        {q && visibleCount === 0 && contacts.length > 0 && (
           <p className="text-neutral-secondary">
             No matches for “{query.trim()}” — check the spelling or clear the
             search (Esc).

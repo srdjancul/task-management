@@ -86,6 +86,8 @@ export type BoardContact = ContactFields & {
   status: ContactStatus;
   board_rank: number;
   created_at: string;
+  // Stamped by the database whenever the note is written or changed.
+  note_at: string | null;
   touch_count: number;
   last_touch_at: string | null;
 };

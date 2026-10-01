@@ -153,6 +153,25 @@ export async function setTaskDone(
   return { error: null };
 }
 
+export async function renameTask(
+  id: string,
+  title: string,
+): Promise<{ error: string | null }> {
+  const trimmed = title.trim();
+  if (!trimmed) return { error: "Task title is required." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tasks")
+    .update({ title: trimmed })
+    .eq("id", id);
+  if (error) {
+    console.error("renameTask failed:", error.message);
+    return { error: "Could not rename the task." };
+  }
+  return { error: null };
+}
+
 export async function deleteTask(
   id: string,
 ): Promise<{ error: string | null }> {

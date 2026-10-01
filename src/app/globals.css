@@ -354,6 +354,13 @@
     --glass-hue: var(--yellow-500);
   }
 
+  /* Planner block with a running timer (owner spec 2026-10-01): the same
+     diagonal gradient in the neon accent, paired with the neon stroke
+     (border-brand). */
+  .glass-brand {
+    --glass-hue: var(--neon-500);
+  }
+
   /*
    * Fixed full-viewport background. The owner-exported grain texture
    * (/bg-ground.webp) is the ground; the violet light from the

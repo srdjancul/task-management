@@ -15,6 +15,7 @@ import {
   toISODate,
   type TimeBlock,
 } from "@/lib/planner-constants";
+import { useWarmRoutes } from "@/lib/route-cache";
 import { cn } from "@/lib/utils";
 
 const rangeFormat = new Intl.DateTimeFormat("en-GB", {
@@ -45,13 +46,14 @@ export function PlannerWeek({
   );
   const today = toISODate(new Date());
 
-  // Warm neighbouring weeks and each day link so navigation is instant.
-  React.useEffect(() => {
-    router.prefetch(`/planner?d=${addDays(date, -7)}&view=week`);
-    router.prefetch(`/planner?d=${addDays(date, 7)}&view=week`);
-    router.prefetch(`/planner?d=${date}`);
-    for (const iso of days) router.prefetch(`/planner?d=${iso}`);
-  }, [router, date, days]);
+  // Warm neighbouring weeks, each day link and the board so navigation is
+  // instant (see route-cache).
+  useWarmRoutes([
+    `/planner?d=${addDays(date, -7)}&view=week`,
+    `/planner?d=${addDays(date, 7)}&view=week`,
+    ...new Set([date, ...days].map((iso) => `/planner?d=${iso}`)),
+    "/",
+  ]);
 
   // Tick while a timer in this week runs, so the week view counts live too.
   const running = blocks.some((b) => b.started_at !== null);

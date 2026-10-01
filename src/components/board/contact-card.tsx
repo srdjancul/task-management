@@ -15,10 +15,20 @@ import { cn } from "@/lib/utils";
 
 const DAY_MS = 86_400_000;
 
-export function daysSinceTouch(contact: BoardContact): number | null {
-  if (!contact.last_touch_at) return null;
-  const ms = Date.now() - new Date(contact.last_touch_at).getTime();
-  return Math.max(0, Math.floor(ms / DAY_MS));
+// Owner spec 2026-10-01: activity is the latest touch OR the latest note
+// write — the note is where a conversation gets written down. Epoch ms,
+// null when there's neither.
+export function lastActivityMs(contact: BoardContact): number | null {
+  const times = [contact.last_touch_at, contact.note_at]
+    .filter((t): t is string => Boolean(t))
+    .map((t) => Date.parse(t));
+  return times.length ? Math.max(...times) : null;
+}
+
+export function daysSinceActivity(contact: BoardContact): number | null {
+  const at = lastActivityMs(contact);
+  if (at === null) return null;
+  return Math.max(0, Math.floor((Date.now() - at) / DAY_MS));
 }
 
 // Owner rule: "applied" gets the green badge, "direct" stays quiet.
@@ -100,7 +110,7 @@ export function cardTone(status: ContactStatus): string | undefined {
 // Inner content, shared by the card and the drag overlay. Every card
 // renders the same three rows so all cards are the same height.
 export function ContactCardBody({ contact }: { contact: BoardContact }) {
-  const days = daysSinceTouch(contact);
+  const days = daysSinceActivity(contact);
   const meta = [contact.position, contact.company].filter(Boolean).join(" · ");
 
   return (
@@ -123,10 +133,10 @@ export function ContactCardBody({ contact }: { contact: BoardContact }) {
         <span
           title={
             days === null
-              ? "Never touched"
+              ? "No activity yet"
               : days === 0
-                ? "Last touch today"
-                : `Last touch ${days} day${days === 1 ? "" : "s"} ago`
+                ? "Last activity today"
+                : `Last activity ${days} day${days === 1 ? "" : "s"} ago`
           }
           className={cn(
             "ml-auto",

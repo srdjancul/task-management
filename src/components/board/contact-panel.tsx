@@ -6,7 +6,7 @@ import { Dialog } from "radix-ui";
 
 import {
   ApproachBadge,
-  daysSinceTouch,
+  daysSinceActivity,
 } from "@/components/board/contact-card";
 import {
   ContactFormFields,
@@ -35,6 +35,7 @@ import {
   type TouchChannel,
   type TouchDirection,
 } from "@/lib/contact-constants";
+import { trackWrite } from "@/lib/route-cache";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -71,9 +72,10 @@ function byHappenedDesc(a: ContactTouch, b: ContactTouch) {
   return b.happened_at.localeCompare(a.happened_at);
 }
 
-// "last touch 5d ago", colored with the same 7d/14d urgency as the cards.
-function LastTouch({ contact }: { contact: BoardContact }) {
-  const days = daysSinceTouch(contact);
+// "last activity 5d ago" (touch or note), colored with the same 7d/14d
+// urgency as the cards.
+function LastActivity({ contact }: { contact: BoardContact }) {
+  const days = daysSinceActivity(contact);
   if (days === null) return null;
   return (
     <span
@@ -85,7 +87,7 @@ function LastTouch({ contact }: { contact: BoardContact }) {
             : "text-neutral-tertiary",
       )}
     >
-      last touch {days === 0 ? "today" : `${days}d ago`}
+      last activity {days === 0 ? "today" : `${days}d ago`}
     </span>
   );
 }
@@ -158,10 +160,8 @@ export function ContactPanel({
     form.reset();
 
     startTransition(async () => {
-      const { touch, error: saveError } = await createTouch(
-        contact.id,
-        input,
-        move,
+      const { touch, error: saveError } = await trackWrite(
+        createTouch(contact.id, input, move),
       );
       if (saveError || !touch) {
         setTouches(previous);
@@ -188,7 +188,7 @@ export function ContactPanel({
     onPatch(contact.id, touchStats(next));
 
     startTransition(async () => {
-      const { error: deleteError } = await deleteTouch(touch.id);
+      const { error: deleteError } = await trackWrite(deleteTouch(touch.id));
       if (deleteError) {
         setTouches(previous);
         onPatch(contact.id, touchStats(previous));
@@ -207,15 +207,27 @@ export function ContactPanel({
       company: contact.company,
       company_note: contact.company_note,
       approach: contact.approach,
+      niche: contact.niche,
       source_url: contact.source_url,
+      note_at: contact.note_at,
     };
+    // A new or changed note is activity: the database stamps note_at, the
+    // board mirrors it now so the card jumps to the top straight away.
+    const noteWritten =
+      fields.company_note !== "" &&
+      fields.company_note !== contact.company_note;
 
     setError(null);
     setEditing(false);
-    onPatch(contact.id, fields);
+    onPatch(contact.id, {
+      ...fields,
+      ...(noteWritten ? { note_at: new Date().toISOString() } : {}),
+    });
 
     startTransition(async () => {
-      const { error: saveError } = await updateContact(contact.id, fields);
+      const { error: saveError } = await trackWrite(
+        updateContact(contact.id, fields),
+      );
       if (saveError) {
         onPatch(contact.id, snapshot);
         setError(saveError);
@@ -228,7 +240,9 @@ export function ContactPanel({
     setError(null);
     onPatch(contact.id, { status });
     startTransition(async () => {
-      const { error: saveError } = await placeContact(contact.id, { status });
+      const { error: saveError } = await trackWrite(
+        placeContact(contact.id, { status }),
+      );
       if (saveError) {
         onPatch(contact.id, { status: previous });
         setError(saveError);
@@ -238,7 +252,7 @@ export function ContactPanel({
 
   function handleDeleteContact() {
     startDeleteTransition(async () => {
-      const { error: deleteError } = await deleteContact(contact.id);
+      const { error: deleteError } = await trackWrite(deleteContact(contact.id));
       if (deleteError) setError(deleteError);
       else onDeleted(contact.id);
     });
@@ -333,7 +347,7 @@ export function ContactPanel({
                         </a>
                       </Button>
                     )}
-                    <LastTouch contact={contact} />
+                    <LastActivity contact={contact} />
                   </div>
                 </div>
                 <Button
