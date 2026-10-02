@@ -36,6 +36,14 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
     ],
   },
   {
+    title: "Planner tracked time (timer stopped)",
+    rows: [
+      ["Tab", "Next field: hours → minutes → seconds"],
+      ["Enter", "Save the time"],
+      ["Esc", "Cancel"],
+    ],
+  },
+  {
     title: "Anywhere",
     rows: [["?", "This overview"]],
   },

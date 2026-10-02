@@ -11,6 +11,7 @@ import {
   createTask,
   deleteTask,
   renameTask,
+  setBlockActualSeconds,
   setBlockDone,
   setBlockPlannedMinutes,
   setTaskDone,
@@ -154,6 +155,32 @@ export function PlannerDay({
         await trackWrite(
           setBlockPlannedMinutes(block.id, date, plannedMinutes),
         ),
+        snapshot,
+      );
+    });
+  }
+
+  function handleActualSeconds(block: TimeBlock, actualSeconds: number) {
+    const snapshot = blocks;
+    setBlocks((all) =>
+      all.map((b) =>
+        b.id === block.id
+          ? {
+              ...b,
+              actual_seconds: actualSeconds,
+              status:
+                b.status === "done"
+                  ? "done"
+                  : actualSeconds > 0
+                    ? "in_progress"
+                    : "planned",
+            }
+          : b,
+      ),
+    );
+    startTransition(async () => {
+      applyBlocksResult(
+        await trackWrite(setBlockActualSeconds(block.id, date, actualSeconds)),
         snapshot,
       );
     });
@@ -381,18 +408,17 @@ export function PlannerDay({
               </header>
 
               <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "text-2xl font-medium tabular-nums",
-                    isRunning
-                      ? "text-brand-primary"
-                      : isDone
-                        ? "text-neutral-tertiary"
-                        : "text-neutral-primary",
-                  )}
-                >
-                  {formatSeconds(seconds)}
-                </span>
+                {isRunning ? (
+                  <span className="text-2xl font-medium tabular-nums text-brand-primary">
+                    {formatSeconds(seconds)}
+                  </span>
+                ) : (
+                  <TrackedTime
+                    block={block}
+                    muted={isDone}
+                    onSave={(total) => handleActualSeconds(block, total)}
+                  />
+                )}
                 {ratio >= 1 && !isDone && (
                   <span className="text-success">planned time reached</span>
                 )}
@@ -471,6 +497,113 @@ export function PlannerDay({
       </section>
       </div>
     </main>
+  );
+}
+
+// Tracked time, editable while the timer is stopped (owner spec
+// 2026-10-02: fix forgotten or untracked work by hand). Click shows
+// H : M : S fields; Enter or clicking away saves, Esc cancels. Same hover
+// as PlannedHours.
+function TrackedTime({
+  block,
+  muted,
+  onSave,
+}: {
+  block: TimeBlock;
+  muted: boolean;
+  onSave: (actualSeconds: number) => void;
+}) {
+  const [editing, setEditing] = React.useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
+  // Esc unmounts the fields, which can fire a blur; don't let it save.
+  const cancelled = React.useRef(false);
+  const total = Math.max(0, Math.floor(block.actual_seconds));
+  const parts = [
+    Math.floor(total / 3600),
+    Math.floor((total % 3600) / 60),
+    total % 60,
+  ];
+
+  function commit() {
+    setEditing(false);
+    const form = formRef.current;
+    if (!form || cancelled.current) return;
+    const value = (name: string) => {
+      const raw = (form.elements.namedItem(name) as HTMLInputElement).value;
+      return raw === "" ? 0 : Number(raw);
+    };
+    const [h, m, sec] = [value("h"), value("m"), value("s")];
+    if (![h, m, sec].every((n) => Number.isInteger(n) && n >= 0)) return;
+    if (m > 59 || sec > 59) return;
+    const next = h * 3600 + m * 60 + sec;
+    if (next > 24 * 3600 || next === total) return;
+    onSave(next);
+  }
+
+  if (editing) {
+    const field = (name: string, label: string, value: number, max: number) => (
+      <Input
+        name={name}
+        type="number"
+        inputMode="numeric"
+        min={0}
+        max={max}
+        defaultValue={value}
+        aria-label={label}
+        autoFocus={name === "h"}
+        onFocus={(e) => e.currentTarget.select()}
+        className="h-8 w-16 px-2 text-right tabular-nums"
+      />
+    );
+    return (
+      <form
+        ref={formRef}
+        className="flex items-center gap-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          commit();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            cancelled.current = true;
+            setEditing(false);
+          }
+        }}
+        // Moving between the three fields keeps editing; leaving saves.
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+            commit();
+        }}
+      >
+        {field("h", "Hours", parts[0], 24)}
+        <span className="text-neutral-tertiary">:</span>
+        {field("m", "Minutes", parts[1], 59)}
+        <span className="text-neutral-tertiary">:</span>
+        {field("s", "Seconds", parts[2], 59)}
+        {/* Enter submits the form; no visible button needed. */}
+        <button type="submit" hidden />
+      </form>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        cancelled.current = false;
+        setEditing(true);
+      }}
+      aria-label={`Edit tracked time (${formatSeconds(total)})`}
+      // -mx-2 keeps the digits aligned with the title above while the
+      // hover surface gets the same padding as "planned".
+      className={cn(
+        "-mx-2 flex items-center gap-2 rounded-base px-2 text-2xl font-medium tabular-nums outline-none transition-colors hover:bg-neutral-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+        muted ? "text-neutral-tertiary" : "text-neutral-primary",
+      )}
+    >
+      {formatSeconds(total)}
+    </button>
   );
 }
 

@@ -73,6 +73,58 @@ export async function setBlockPlannedMinutes(
   return freshBlocks(date);
 }
 
+// Owner spec 2026-10-02: fix tracked time by hand when the timer was
+// forgotten. Only while the block's timer is stopped — the started_at
+// filter makes the database refuse it mid-run, so a live timer is never
+// overwritten.
+export async function setBlockActualSeconds(
+  id: string,
+  date: string,
+  actualSeconds: number,
+): Promise<BlocksResult> {
+  if (
+    !Number.isInteger(actualSeconds) ||
+    actualSeconds < 0 ||
+    actualSeconds > 24 * 3600
+  ) {
+    return { blocks: null, error: "Tracked time must be 0–24 hours." };
+  }
+
+  const supabase = await createClient();
+  const { data: block, error: readError } = await supabase
+    .from("time_blocks")
+    .select("status")
+    .eq("id", id)
+    .single();
+  if (readError) {
+    console.error("setBlockActualSeconds read failed:", readError.message);
+    return { blocks: null, error: "Could not update the tracked time." };
+  }
+
+  const { data, error } = await supabase
+    .from("time_blocks")
+    .update({
+      actual_seconds: actualSeconds,
+      // Done stays done; otherwise the status follows the time.
+      ...(block.status === "done"
+        ? {}
+        : { status: actualSeconds > 0 ? "in_progress" : "planned" }),
+    })
+    .eq("id", id)
+    .is("started_at", null)
+    .select("id");
+  if (error || data.length === 0) {
+    if (error) console.error("setBlockActualSeconds failed:", error.message);
+    return {
+      blocks: null,
+      error: error
+        ? "Could not update the tracked time."
+        : "Stop the timer before editing the time.",
+    };
+  }
+  return freshBlocks(date);
+}
+
 export async function setBlockDone(
   id: string,
   date: string,
