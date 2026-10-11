@@ -48,7 +48,7 @@ Everything sits behind login; there is exactly one user.
 - Touch count / last-touch are **derived** from `touches` (via the
   `contacts_with_activity` view) — never stored on the contact.
 - Timer math happens in Postgres (`start_time_block`, `stop_time_block`)
-  with the database clock; only one running timer (partial unique index).
+  with the database clock; timers are independent (any number can run at once).
 - RLS owner-only policies on every table; server actions validate enums
   and required fields before writing.
 - Keyboard-first: `C`, `/`, arrows, `Ctrl+arrows`, `Enter`, `T`, `?` —

@@ -103,22 +103,13 @@ export function PlannerDay({
   function handleStart(block: TimeBlock) {
     const snapshot = blocks;
     const startedAt = new Date().toISOString();
-    // Optimistically stop whatever runs and start this one.
+    // Timers are independent: starting this one leaves the others running.
     setBlocks((all) =>
-      all.map((b) => {
-        if (b.id === block.id)
-          return { ...b, started_at: startedAt, status: "in_progress" };
-        if (b.started_at) {
-          return {
-            ...b,
-            actual_seconds:
-              b.actual_seconds +
-              Math.max(0, (Date.now() - Date.parse(b.started_at)) / 1000),
-            started_at: null,
-          };
-        }
-        return b;
-      }),
+      all.map((b) =>
+        b.id === block.id && !b.started_at
+          ? { ...b, started_at: startedAt, status: "in_progress" }
+          : b,
+      ),
     );
     startTransition(async () => {
       applyBlocksResult(await trackWrite(startBlock(block.id, date)), snapshot);

@@ -19,7 +19,7 @@ login, dark-only UI built from a Figma token system.
 **Daily planner** — Monday to Saturday, three fixed blocks per day:
 research 2h, client work 6h, internal projects 2h.
 
-- Start/stop timer per block; starting one stops the running one; elapsed
+- Start/stop timer per block; timers are independent, so several can run at once; elapsed
   time is computed by Postgres functions on the database clock
 - Tasks per block plus unattached day tasks
 - Week view: actual vs planned per category, per day and in total
